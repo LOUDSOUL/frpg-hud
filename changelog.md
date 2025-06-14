@@ -1,4 +1,8 @@
-# Version 2025-06-03
+# Version 2025-06-15
+- Fixed crash with meals active
+
+
+# Version 2025-06-14
 - Added meal timers in the HUD (can be turned off)
 - Added craftworks simulation (can be turned off)
 - Added settings (accessible by middle clicking "HUD" button)
