@@ -32,7 +32,7 @@ export const handleHudTimerUpdate = (value) => {
     return true;
 };
 
-handleHudTimerUpdate(hudTimers);
+setTimeout(() => handleHudTimerUpdate(hudTimers));
 
 let hudUrl = GM_getValue(STORAGE_KEYS.HUD_URL, null);
 export const setHudUrl = (url) => hudUrl = url;
@@ -120,8 +120,8 @@ const hudHtmlCallbacks = {
             </span>`;
     },
     [HUD_DISPLAY_MODES.TIMER]: ({ name, image, timer, showName }) => {
-        const textColour = currentTime > timer ? "orange" : getDefaultTextColor();
         const currentTime = Date.now();
+        const textColour = currentTime > timer ? "orange" : getDefaultTextColor();
         const remainingTime = currentTime > timer ? "Finished!" : formatRemainingTime(timer, currentTime);
         const timerText = showName ? `${name} (${remainingTime})` : remainingTime;
 
