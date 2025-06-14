@@ -1,0 +1,19 @@
+{
+  "name": "frpg-hud",
+  "version": "1.0.0",
+  "main": "dist/frpg-hud.user.js",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0-only",
+  "description": "",
+  "devDependencies": {
+    "@eslint/js": "^9.28.0",
+    "eslint": "^9.28.0",
+    "globals": "^16.2.0",
+    "vite": "^6.3.5"
+  }
+}
