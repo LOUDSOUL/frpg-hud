@@ -1,4 +1,8 @@
 # Version 2025-06-15
+- Fixed loadout items not in inventory appearing as `undefined`
+
+
+# Version 2025-06-15
 - Fixed crash with meals active
 
 
