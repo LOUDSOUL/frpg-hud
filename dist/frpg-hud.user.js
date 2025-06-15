@@ -278,7 +278,7 @@
   const setHudItemsByName = (items, displayMode = HUD_DISPLAY_MODES.INVENTORY) => {
     setHudDetails(items.map((item) => {
       return { ...inventoryCache[itemNameIdMap.get(item)], displayMode };
-    }).filter((item) => item));
+    }).filter((item) => item.id));
   };
   const removeHudItem = (items) => {
     const updatedItems = hudItems.filter((item) => !items.includes(item.id));

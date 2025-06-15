@@ -69,7 +69,7 @@ export const setHudDetails = (items, url) => {
 export const setHudItemsByName = (items, displayMode = HUD_DISPLAY_MODES.INVENTORY) => {
     setHudDetails(items.map(item => {
         return { ...inventoryCache[itemNameIdMap.get(item)], displayMode };
-    }).filter(item => item));
+    }).filter(item => item.id));
 };
 
 export const removeHudItem = (items) => {
