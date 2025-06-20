@@ -14,6 +14,7 @@ const parseWorkshop = (response) => {
     for (const recipe of recipeList) {
         const recipeId = recipe.dataset.id;
         const recipeName = recipe.dataset.name;
+        if (recipeId === undefined) continue;
 
         recipeItems[recipeId] = {
             id: recipeId,
