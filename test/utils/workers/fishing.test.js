@@ -63,14 +63,19 @@ describe('Fishing response handler functionality', () => {
     );
   });
 
-  // todo add real example
   it('should handle multiple fish caught', () => {
-    const response = `<img src='/img/items/7843.png' alt='Flier' class='itemimg' ><br/>Flier (x3)`;
-    const url = "worker.php?go=fishcaught&id=2";
+    const response = `<img src='/img/items/yellowperch.png' alt='Yellow Perch' class='itemimg' ><br/>Yellow Perch (x3)<span style='display:none'>
+          <div id="fishcnt">6,340</div>
+          <div id="fishingpb">77.2</div>
+          <div id="staminacnt">40</div>
+          <div id="baitcnt">16</div>
+        </span>`;
+    const url = "worker.php?go=fishcaught&id=3&r=154990&bamt=1&p=281&q=682";
+    const type = "ajax";
 
-    expect(responseHandler(response, url)).toBe(response);
+    expect(responseHandler(response, url, type)).toBe(response);
     expect(updateInventory).toHaveBeenCalledWith(
-      { 'Flier': 3 },
+      { 'Yellow Perch': 3 },
       { isAbsolute: false, resolveNames: true }
     );
   });
