@@ -19,8 +19,6 @@ const setupDOMContentLoadedHandlers = () => {
 
 const setupAuxClickHandler = () => {
     document.body.addEventListener('auxclick', (event) => {
-        if (event.button !== 1) return;
-
         if (event.target.id === "frpg-hud-toggle") {
             event.preventDefault();
             event.stopPropagation();
