@@ -6,6 +6,7 @@ import itemSellWorkers from "./itemSell";
 import itemSendWorkers from "./itemSend";
 import itemUseWorkers from "./itemUse";
 import miscWorkers from "./misc";
+import beachballWorkers from "./beachball";
 
 export const workers = [
     ...explorationWorkers,
@@ -16,4 +17,5 @@ export const workers = [
     ...itemSendWorkers,
     ...miscWorkers,
     ...farmWorkers,
+    ...beachballWorkers,
 ];
