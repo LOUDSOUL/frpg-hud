@@ -38,4 +38,9 @@ export default defineConfig({
             writeFileSync(filePath, metadata + '\n\n' + content);
         }
     }],
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: ['./test/setup.js'],
+    },
 });

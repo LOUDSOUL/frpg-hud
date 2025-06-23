@@ -17,7 +17,7 @@ import { setupEventListeners } from "./utils/listeners";
 import { setupStorageListeners } from "./utils/storage";
 
 
-const listeners = [
+export const listeners = [
     workerListener,
     hudListener,
     xfarmListener,
@@ -33,7 +33,7 @@ const listeners = [
     townsfolkListener,
 ];
 
-const responseHandler = (response, url, type) => {
+export const responseHandler = (response, url, type) => {
     for (const listener of listeners) {
         for (const regex of listener.urlMatch) {
             if (!regex.test(url)) continue;

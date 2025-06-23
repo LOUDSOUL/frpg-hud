@@ -25,6 +25,21 @@ export default defineConfig([
     extends: ["js/recommended"],
   },
   {
+    files: ["test/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        "vi": "readonly",
+        "describe": "readonly",
+        "it": "readonly",
+        "expect": "readonly",
+        "beforeEach": "readonly",
+        "afterEach": "readonly",
+      }
+    },
+  },
+  {
     files: ["vite.config.js"],
     languageOptions: {
       globals: globals.node,
