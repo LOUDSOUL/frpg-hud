@@ -3,6 +3,7 @@ import { hudTimers } from "../hud";
 import { inventoryCache, updateInventory } from "../inventory";
 import { parseHtml } from "../misc";
 import { parseNumberWithCommas } from "../numbers";
+import { supplyPacks } from "../supplyPack";
 
 
 const handleMealUse = (response, parameters) => {
@@ -23,18 +24,33 @@ const handleMealUse = (response, parameters) => {
     updateInventory({ [itemId]: -1 }, { isAbsolute: false });
 };
 
-const handleLocksmithOpen = (response) => {
+const handleLocksmithOpen = (response, parameters) => {
     const parsedResponse = parseHtml(response);
     const updatedInventory = {};
+
+    const supplyPackId = parameters.get("id");
+    const supplyPackName = inventoryCache[supplyPackId]?.name;
+    const supplyPackData = supplyPacks[supplyPackName] ?? {};
+    let updateSupplyPacks = false;
+
     for (const itemRow of parsedResponse.querySelectorAll("img")) {
         const itemDetails = itemRow.nextSibling;
         const [nameText, countText] = itemDetails.textContent.split("x");
         const itemName = nameText.trim();
         const itemCount = parseNumberWithCommas(countText);
 
+        if (!Object.keys(supplyPackData).includes(itemName)) {
+            supplyPackData[itemName] = 0;
+            updateSupplyPacks = true;
+        };
+
         updatedInventory[itemName] = itemCount;
     }
+
     updateInventory(updatedInventory, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    if (updateSupplyPacks && supplyPackName && supplyPackName !== "Void Bag") {
+        GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, {...supplyPacks, [supplyPackName]: supplyPackData });
+    }
 };
 
 const handleOrangeJuiceUse = (response, parameters) => {

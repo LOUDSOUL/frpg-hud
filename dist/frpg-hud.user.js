@@ -1078,6 +1078,30 @@
       listener: handleItemSend
     }
   ];
+  let supplyPacks = GM_getValue(STORAGE_KEYS.SUPPLY_PACKS, {});
+  const setSupplyPacks = (packs) => supplyPacks = packs;
+  const parseSupplyPack = (titleRows, itemName) => {
+    const supplyPackTitle = titleRows.find(
+      (row) => row.innerText.trim().toLowerCase() === "item contents"
+    );
+    if (!supplyPackTitle) return;
+    const supplyPackItems = {};
+    const updatedInventory = {};
+    const itemListElement = supplyPackTitle.nextElementSibling.nextElementSibling;
+    const itemList = itemListElement.querySelectorAll("a.item-link");
+    for (const item of itemList) {
+      const itemId = item.href.split("id=")[1];
+      const image = item.querySelector("img.itemimg").src;
+      const name = item.querySelector(".item-title > strong").innerText.trim();
+      const count = Number(item.querySelector(".item-after").innerText.trim().slice(0, -1));
+      if (name === "Gold") continue;
+      supplyPackItems[name] = count;
+      updatedInventory[itemId] = { id: itemId, name, image };
+    }
+    updateInventory(updatedInventory, { isDetailed: true });
+    const updatedSupplyPacks = { ...supplyPacks, [itemName]: supplyPackItems };
+    GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, updatedSupplyPacks);
+  };
   const handleMealUse = (response, parameters) => {
     if (!response === "success") return;
     const itemId = parameters.get("id");
@@ -1090,17 +1114,29 @@
     GM_setValue(STORAGE_KEYS.HUD_TIMERS, updatedTimers);
     updateInventory({ [itemId]: -1 }, { isAbsolute: false });
   };
-  const handleLocksmithOpen = (response) => {
+  const handleLocksmithOpen = (response, parameters) => {
+    var _a2;
     const parsedResponse = parseHtml(response);
     const updatedInventory = {};
+    const supplyPackId = parameters.get("id");
+    const supplyPackName = (_a2 = inventoryCache[supplyPackId]) == null ? void 0 : _a2.name;
+    const supplyPackData = supplyPacks[supplyPackName] ?? {};
+    let updateSupplyPacks = false;
     for (const itemRow of parsedResponse.querySelectorAll("img")) {
       const itemDetails = itemRow.nextSibling;
       const [nameText, countText] = itemDetails.textContent.split("x");
       const itemName = nameText.trim();
       const itemCount = parseNumberWithCommas(countText);
+      if (!Object.keys(supplyPackData).includes(itemName)) {
+        supplyPackData[itemName] = 0;
+        updateSupplyPacks = true;
+      }
       updatedInventory[itemName] = itemCount;
     }
     updateInventory(updatedInventory, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    if (updateSupplyPacks && supplyPackName && supplyPackName !== "Void Bag") {
+      GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, { ...supplyPacks, [supplyPackName]: supplyPackData });
+    }
   };
   const handleOrangeJuiceUse = (response, parameters) => {
     if (!response.toLowerCase().includes("you drank")) return;
@@ -1412,30 +1448,6 @@
     itemData[updateValue] = newValue;
     quickActions[itemName] = itemData;
     GM_setValue(STORAGE_KEYS.QUICK_ACTIONS, quickActions);
-  };
-  let supplyPacks = GM_getValue(STORAGE_KEYS.SUPPLY_PACKS, {});
-  const setSupplyPacks = (packs) => supplyPacks = packs;
-  const parseSupplyPack = (titleRows, itemName) => {
-    const supplyPackTitle = titleRows.find(
-      (row) => row.innerText.trim().toLowerCase() === "item contents"
-    );
-    if (!supplyPackTitle) return;
-    const supplyPackItems = {};
-    const updatedInventory = {};
-    const itemListElement = supplyPackTitle.nextElementSibling.nextElementSibling;
-    const itemList = itemListElement.querySelectorAll("a.item-link");
-    for (const item of itemList) {
-      const itemId = item.href.split("id=")[1];
-      const image = item.querySelector("img.itemimg").src;
-      const name = item.querySelector(".item-title > strong").innerText.trim();
-      const count = Number(item.querySelector(".item-after").innerText.trim().slice(0, -1));
-      if (name === "Gold") continue;
-      supplyPackItems[name] = count;
-      updatedInventory[itemId] = { id: itemId, name, image };
-    }
-    updateInventory(updatedInventory, { isDetailed: true });
-    const updatedSupplyPacks = { ...supplyPacks, [itemName]: supplyPackItems };
-    GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, updatedSupplyPacks);
   };
   const getPanelRows = (parsedResponse) => Array.from(parsedResponse.querySelectorAll(".list-block > ul > li.close-panel"));
   const getTitleRows = (parsedResponse) => Array.from(parsedResponse.querySelectorAll(".content-block-title"));
