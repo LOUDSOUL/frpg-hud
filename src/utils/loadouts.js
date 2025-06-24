@@ -1,10 +1,23 @@
-import { HUD_DISPLAY_MODES, loadouts } from "../constants";
+import { HUD_DISPLAY_MODES, loadouts, STORAGE_KEYS } from "../constants";
 import { craftworks } from "./craftworks";
-import { hudStatus, setHudItemsByName, toggleHudStatus } from "./hud";
+import { hudItems, hudStash, hudStatus, setHudItemsByName, toggleHudStatus } from "./hud";
 import { inventoryCache } from "./inventory";
 import { refreshInventory } from "./misc";
 import { showSettings } from "./settings";
 
+
+const showLoadout = (loadout) => {
+    if (hudStash === null) {
+        const currentItemNames = hudItems.map(item => item.name);
+        GM_setValue(STORAGE_KEYS.HUD_STASH, currentItemNames);
+    };
+
+    setHudItemsByName(
+        loadout.items,
+        loadout.displayMode ?? HUD_DISPLAY_MODES.INVENTORY
+    );
+    if (!hudStatus) toggleHudStatus();
+};
 
 export const showLoadouts = () => {
     const loadoutActions = [
@@ -19,23 +32,12 @@ export const showLoadouts = () => {
         ...Object.keys(loadouts).map((loadoutName) => {
             return {
                 text: loadoutName,
-                onClick: () => {
-                    setHudItemsByName(
-                        loadouts[loadoutName].items,
-                        loadouts[loadoutName].displayMode ?? HUD_DISPLAY_MODES.INVENTORY
-                    );
-                    if (!hudStatus) toggleHudStatus();
-                },
+                onClick: () => showLoadout(loadouts[loadoutName]),
             }
         }),
         {
             text: "Craftworks",
-            onClick: () => {
-                if (craftworks.length === 0) return;
-
-                setHudItemsByName(craftworks.map(entry => inventoryCache[entry.item].name));
-                if (!hudStatus) toggleHudStatus();
-            },
+            onClick: () => showLoadout({ items: craftworks.map(entry => inventoryCache[entry.item].name) }),
         },
         {
             text: "Cancel",

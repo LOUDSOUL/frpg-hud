@@ -32,6 +32,7 @@
     HUD_STATUS: "frpg.hud-status",
     HUD_ITEMS: "frpg.hud-items",
     HUD_URL: "frpg.hud-url",
+    HUD_STASH: "frpg.hud-stash",
     HUD_TIMERS: "frpg.hud-timers",
     SUPPLY_PACKS: "frpg.supply-packs",
     NEW_ITEM: "frpg.new-item",
@@ -262,6 +263,8 @@
   let hudItems = GM_getValue(STORAGE_KEYS.HUD_ITEMS, []);
   const setHudItems = (items) => hudItems = items;
   let hudTimers = GM_getValue(STORAGE_KEYS.HUD_TIMERS, {});
+  let hudStash = GM_getValue(STORAGE_KEYS.HUD_STASH, null);
+  const setHudStash = (value) => hudStash = value;
   let hudTimerInterval = null;
   const handleHudTimerUpdate = (value) => {
     hudTimers = value;
@@ -304,6 +307,11 @@
   const removeHudItem = (items) => {
     const updatedItems = hudItems.filter((item) => !items.includes(item.id));
     GM_setValue(STORAGE_KEYS.HUD_ITEMS, updatedItems);
+  };
+  const restoreHudItems = () => {
+    if (hudStash === null) return;
+    setHudItemsByName(hudStash);
+    GM_setValue(STORAGE_KEYS.HUD_STASH, null);
   };
   const formatRemainingTime = (timer, currentTime) => {
     const remainingSeconds = Math.max(0, Math.floor((timer - currentTime) / 1e3));
@@ -381,6 +389,7 @@
     return hudHtml;
   };
   unsafeWindow.refreshInventory = refreshInventory;
+  unsafeWindow.restoreHudItems = restoreHudItems;
   const getHudHtml = () => {
     const hudHasItems = hudItems.length > 0;
     const filteredTimers = Object.fromEntries(
@@ -430,10 +439,12 @@
       hudSegments.push("<span>HUD empty!</span>");
     }
     hudHtml += hudSegments.join("<hr />");
+    const continueButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" href="${hudUrl}">C</a>`;
+    const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
                     <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    <a href="${hudUrl}" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;">C</a>
+                    ${hudStash === null ? continueButton : restoreButton}
                 </div>`;
     hudHtml += `</div>`;
     return hudHtml;
@@ -1968,6 +1979,17 @@
       });
     };
   };
+  const showLoadout = (loadout) => {
+    if (hudStash === null) {
+      const currentItemNames = hudItems.map((item) => item.name);
+      GM_setValue(STORAGE_KEYS.HUD_STASH, currentItemNames);
+    }
+    setHudItemsByName(
+      loadout.items,
+      loadout.displayMode ?? HUD_DISPLAY_MODES.INVENTORY
+    );
+    if (!hudStatus) toggleHudStatus();
+  };
   const showLoadouts = () => {
     const loadoutActions = [
       {
@@ -1981,22 +2003,12 @@
       ...Object.keys(loadouts).map((loadoutName) => {
         return {
           text: loadoutName,
-          onClick: () => {
-            setHudItemsByName(
-              loadouts[loadoutName].items,
-              loadouts[loadoutName].displayMode ?? HUD_DISPLAY_MODES.INVENTORY
-            );
-            if (!hudStatus) toggleHudStatus();
-          }
+          onClick: () => showLoadout(loadouts[loadoutName])
         };
       }),
       {
         text: "Craftworks",
-        onClick: () => {
-          if (craftworks.length === 0) return;
-          setHudItemsByName(craftworks.map((entry) => inventoryCache[entry.item].name));
-          if (!hudStatus) toggleHudStatus();
-        }
+        onClick: () => showLoadout({ items: craftworks.map((entry) => inventoryCache[entry.item].name) })
       },
       {
         text: "Cancel",
@@ -2105,6 +2117,10 @@
     [STORAGE_KEYS.HUD_TIMERS]: handleHudTimerUpdate,
     [STORAGE_KEYS.HUD_STATUS]: (value) => {
       setHudStatus(value);
+      return true;
+    },
+    [STORAGE_KEYS.HUD_STASH]: (value) => {
+      setHudStash(value);
       return true;
     },
     [STORAGE_KEYS.INVENTORY]: (value) => {

@@ -19,6 +19,9 @@ export const setHudItems = (items) => hudItems = items;
 
 export let hudTimers = GM_getValue(STORAGE_KEYS.HUD_TIMERS, {});
 
+export let hudStash = GM_getValue(STORAGE_KEYS.HUD_STASH, null);
+export const setHudStash = (value) => hudStash = value;
+
 let hudTimerInterval = null;
 
 export const handleHudTimerUpdate = (value) => {
@@ -75,7 +78,14 @@ export const setHudItemsByName = (items, displayMode = HUD_DISPLAY_MODES.INVENTO
 export const removeHudItem = (items) => {
     const updatedItems = hudItems.filter(item => !items.includes(item.id));
     GM_setValue(STORAGE_KEYS.HUD_ITEMS, updatedItems);
-}
+};
+
+const restoreHudItems = () => {
+    if (hudStash === null) return;
+
+    setHudItemsByName(hudStash);
+    GM_setValue(STORAGE_KEYS.HUD_STASH, null);
+};
 
 const formatRemainingTime = (timer, currentTime) => {
     const remainingSeconds = Math.max(0, Math.floor((timer - currentTime) / 1000));
@@ -167,6 +177,7 @@ const getHudTable = (items, perRowItems) => {
 };
 
 unsafeWindow.refreshInventory = refreshInventory;
+unsafeWindow.restoreHudItems = restoreHudItems;
 
 export const getHudHtml = () => {
     const hudHasItems = hudItems.length > 0;
@@ -225,10 +236,13 @@ export const getHudHtml = () => {
 
     hudHtml += hudSegments.join("<hr />");
 
+    const continueButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" href="${hudUrl}">C</a>`;
+    const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
+
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
                     <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    <a href="${hudUrl}" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;">C</a>
+                    ${hudStash === null ? continueButton : restoreButton}
                 </div>`;
 
     hudHtml += `</div>`

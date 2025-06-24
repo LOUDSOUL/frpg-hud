@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
     HUD_STATUS: "frpg.hud-status",
     HUD_ITEMS: "frpg.hud-items",
     HUD_URL: "frpg.hud-url",
+    HUD_STASH: "frpg.hud-stash",
     HUD_TIMERS: "frpg.hud-timers",
     SUPPLY_PACKS: "frpg.supply-packs",
     NEW_ITEM: "frpg.new-item",
