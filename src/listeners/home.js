@@ -1,5 +1,6 @@
 import { parseHtml } from "../utils/misc";
 import { STORAGE_KEYS } from "../constants";
+import { hudTimers } from "../utils/hud";
 
 
 const parseHome = (response) => {
@@ -22,7 +23,7 @@ const parseHome = (response) => {
         }
     }
 
-    GM_setValue(STORAGE_KEYS.HUD_TIMERS, updatedTimers);
+    GM_setValue(STORAGE_KEYS.HUD_TIMERS, { ...hudTimers, ...updatedTimers });
     return response;
 };
 

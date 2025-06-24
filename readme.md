@@ -27,7 +27,7 @@ You can perform a Quick Action on the HUD toggle button to edit the script's set
 ### Craftworks Simulation
 As you gain items it will automatically run a simulation of your current craftworks items to keep your inventory in sync. If this feature causes issues, it can be turned off in the script settings. 
 
-Unfortunately since the game uses stochastic rounding, there's no way to simulate the crafts with 100% accuracy. The hourly/10 minute crons can also cause the inventory to go out of sync. When it happens, you can click the refresh button to sync the inventory again. 
+Unfortunately since the game uses stochastic rounding, there's no way to simulate the crafts with 100% accuracy causing the inventory to sometimes go out of sync. When it happens, you can click the refresh button to sync the inventory again. 
 
 
 Some other QoL features:
@@ -50,7 +50,9 @@ Source code available on [GitHub](https://github.com/LOUDSOUL/frpg-hud/)
 2. Visit the workshop
 3. Open the townsfolk page (If you do not have the quick send perk)
 4. Open the craftworks page (If you have it unlocked)
-5. Reload the page
+5. Visit the farm page
+
+If you do not have the "Farm Dashboard" perk from the supply shop, also visit the hourly production buildings individually.
 
 When you visit an exploration or fishing zone for the first time, it will prompt you to go to its details page. This is only required to be done once. 
 

@@ -24,6 +24,7 @@ const parseInventory = (response) => {
     };
     updateInventory(updatedInventory, { isDetailed: true, overwriteMissing: true });
     GM_setValue(STORAGE_KEYS.INVENTORY_LIMIT, currentLimit);
+    GM_setValue(STORAGE_KEYS.PRODUCTION_LAST_UPDATE, Date.now());
 
     return response;
 }

@@ -39,6 +39,10 @@ vi.mock('../src/utils/storage', () => ({
   setupStorageListeners: vi.fn(),
 }));
 
+vi.mock('../src/utils/production', () => ({
+  scheduleProduction: vi.fn(),
+}));
+
 vi.mock('../src/utils/inventory', () => ({
     updateInventory: vi.fn(),
     inventoryCache: {},

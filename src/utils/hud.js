@@ -170,7 +170,10 @@ unsafeWindow.refreshInventory = refreshInventory;
 
 export const getHudHtml = () => {
     const hudHasItems = hudItems.length > 0;
-    const timersCount = Object.keys(hudTimers).length;
+    const filteredTimers = Object.fromEntries(
+        Object.entries(hudTimers).filter(([, timer]) => Date.now() - timer <= 15 * 1000)
+    );
+    const timersCount = Object.keys(filteredTimers).length;
     const displayTimers = timersCount > 0 && settings.mealTimersEnabled;
 
     const perRowItems = hudItems.length > 12 ? 3 : 2;
@@ -200,7 +203,7 @@ export const getHudHtml = () => {
 
     if (displayTimers) {
         const showName = timersCount === 1;
-        const timerItems = Object.entries(hudTimers).map(([id, timer]) => {
+        const timerItems = Object.entries(filteredTimers).map(([id, timer]) => {
             return {
                 ...inventoryCache[id],
                 timer,
@@ -233,15 +236,6 @@ export const getHudHtml = () => {
     return hudHtml;
 }
 
-const filterTimers = () => {
-    const filteredTimers = Object.fromEntries(
-        Object.entries(hudTimers).filter(([, timer]) => Date.now() - timer <= 30 * 1000)
-    );
-    if (Object.keys(filteredTimers).length !== Object.keys(hudTimers).length) {
-        GM_setValue(STORAGE_KEYS.HUD_TIMERS, filteredTimers);
-    }
-}
-
 const _updateHudDisplay = (forceUpdate = false) => {
     if (document.hidden && !forceUpdate) return;
 
@@ -255,8 +249,6 @@ const _updateHudDisplay = (forceUpdate = false) => {
 
     const hudElement = getHudHtml();
     parentElement.innerHTML = hudElement;
-
-    filterTimers();
 }
 
 export const updateHudDisplay = debounceHudUpdate(_updateHudDisplay, 100);

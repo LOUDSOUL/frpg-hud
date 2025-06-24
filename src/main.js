@@ -11,10 +11,17 @@ import townsfolkListener from "./listeners/npclevels";
 import spinListener from "./listeners/spin";
 import workshopListener from "./listeners/workshop";
 import xfarmListener from "./listeners/xfarm";
+import sawmillListener from "./listeners/sawmill";
+import quarryListener from "./listeners/quarry";
+import hayfieldListener from "./listeners/hayfield";
+import steelworksListener from "./listeners/steelworks";
+import troutFarmListener from "./listeners/troutfarm";
+import wormHabitatListener from "./listeners/hab";
 
 import { interceptFetch, interceptXHR } from "./utils/interceptors";
 import { setupEventListeners } from "./utils/listeners";
 import { setupStorageListeners } from "./utils/storage";
+import { scheduleProduction } from "./utils/production";
 
 
 const listeners = [
@@ -31,6 +38,12 @@ const listeners = [
     locksmithListener,
     spinListener,
     townsfolkListener,
+    sawmillListener,
+    quarryListener,
+    hayfieldListener,
+    steelworksListener,
+    troutFarmListener,
+    wormHabitatListener,
 ];
 
 const responseHandler = (response, url, type) => {
@@ -55,6 +68,8 @@ const responseHandler = (response, url, type) => {
 
     return response;
 };
+
+scheduleProduction();
 
 setupEventListeners();
 setupStorageListeners();

@@ -1,6 +1,7 @@
 import { seedCrop } from "../constants";
 import { inventoryCache } from "../utils/inventory";
 import { parseHtml } from "../utils/misc";
+import { parseProductionRows } from "../utils/xfarm";
 
 
 const updateCropCount = (event) => {
@@ -17,18 +18,20 @@ const updateCropCount = (event) => {
 };
 unsafeWindow.updateCropCount = updateCropCount;
 
-const cropCount = (response) => {
+const parseFarm = (response) => {
     const parsedResponse = parseHtml(response);
     const cropSelect = parsedResponse.querySelector("select.seedid");
     cropSelect.setAttribute("onchange", "updateCropCount(event)");
     updateCropCount({ target: cropSelect });
 
+    parseProductionRows(parsedResponse);
+
     return parsedResponse.innerHTML;
 };
 
 const xfarmListener = {
-    name: "Crop Count",
-    callback: cropCount,
+    name: "Farm",
+    callback: parseFarm,
     urlMatch: [/^xfarm\.php\?id=/],
     passive: false,
 };

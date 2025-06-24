@@ -14,6 +14,9 @@ export const STORAGE_KEYS = {
     NEW_ITEM: "frpg.new-item",
     CRAFTWORKS: "frpg.craftworks",
     SETTINGS: "frpg.settings",
+    PRODUCTION: "frpg.production",
+    PRODUCTION_LAST_UPDATE: "frpg.production-last-update",
+    PRODUCTION_LOCK: "frpg.production-lock",
 };
 
 export const HUD_DISPLAY_MODES = {
@@ -102,3 +105,29 @@ export const defaultSettings = {
         default: true,
     },
 };
+
+export const farmProductionKeys = {
+    "Worms": "Worms",
+    "Gummy Worms": "Gummies",
+    "Mealworms": "Mealworms",
+
+    "Grubs": "Grubs",
+    "Minnows": "Minnows",
+
+    "Wood": "Wood",
+    "Board": "Boards",
+    "Oak": "Oak",
+
+    "Steel": "Steel",
+    "Steel Wire": "Wire",
+
+    "Straw": "Straw",
+
+    "Stone": "Stone",
+    "Sandstone": "Stone",
+    "Coal": "Coal Hourly",
+};
+
+export const tenMinuteProductionItems = ["Straw", "Stone", "Sandstone"];
+
+export const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel Wire", "Oak", "Worms", "Gummy Worms", "Mealworms", "Grubs", "Minnows"];
