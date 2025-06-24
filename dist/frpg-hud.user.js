@@ -36,7 +36,10 @@
     SUPPLY_PACKS: "frpg.supply-packs",
     NEW_ITEM: "frpg.new-item",
     CRAFTWORKS: "frpg.craftworks",
-    SETTINGS: "frpg.settings"
+    SETTINGS: "frpg.settings",
+    PRODUCTION: "frpg.production",
+    PRODUCTION_LAST_UPDATE: "frpg.production-last-update",
+    PRODUCTION_LOCK: "frpg.production-lock"
   };
   const HUD_DISPLAY_MODES = {
     INVENTORY: "INVENTORY",
@@ -145,6 +148,24 @@
       default: true
     }
   };
+  const farmProductionKeys = {
+    "Worms": "Worms",
+    "Gummy Worms": "Gummies",
+    "Mealworms": "Mealworms",
+    "Grubs": "Grubs",
+    "Minnows": "Minnows",
+    "Wood": "Wood",
+    "Board": "Boards",
+    "Oak": "Oak",
+    "Steel": "Steel",
+    "Steel Wire": "Wire",
+    "Straw": "Straw",
+    "Stone": "Stone",
+    "Sandstone": "Stone",
+    "Coal": "Coal Hourly"
+  };
+  const tenMinuteProductionItems = ["Straw", "Stone", "Sandstone"];
+  const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel Wire", "Oak", "Worms", "Gummy Worms", "Mealworms", "Grubs", "Minnows"];
   const parseHtml = (htmlString) => {
     const tempElement = document.createElement("div");
     tempElement.innerHTML = htmlString;
@@ -362,7 +383,10 @@
   unsafeWindow.refreshInventory = refreshInventory;
   const getHudHtml = () => {
     const hudHasItems = hudItems.length > 0;
-    const timersCount = Object.keys(hudTimers).length;
+    const filteredTimers = Object.fromEntries(
+      Object.entries(hudTimers).filter(([, timer]) => Date.now() - timer <= 15 * 1e3)
+    );
+    const timersCount = Object.keys(filteredTimers).length;
     const displayTimers = timersCount > 0 && settings.mealTimersEnabled;
     const perRowItems = hudItems.length > 12 ? 3 : 2;
     const timerRows = Math.ceil(timersCount / perRowItems);
@@ -386,7 +410,7 @@
     const hudSegments = [];
     if (displayTimers) {
       const showName = timersCount === 1;
-      const timerItems = Object.entries(hudTimers).map(([id, timer]) => {
+      const timerItems = Object.entries(filteredTimers).map(([id, timer]) => {
         return {
           ...inventoryCache[id],
           timer,
@@ -414,14 +438,6 @@
     hudHtml += `</div>`;
     return hudHtml;
   };
-  const filterTimers = () => {
-    const filteredTimers = Object.fromEntries(
-      Object.entries(hudTimers).filter(([, timer]) => Date.now() - timer <= 30 * 1e3)
-    );
-    if (Object.keys(filteredTimers).length !== Object.keys(hudTimers).length) {
-      GM_setValue(STORAGE_KEYS.HUD_TIMERS, filteredTimers);
-    }
-  };
   const _updateHudDisplay = (forceUpdate = false) => {
     if (document.hidden && !forceUpdate) return;
     const parentElement = document.querySelector("#statszone");
@@ -432,7 +448,6 @@
     }
     const hudElement = getHudHtml();
     parentElement.innerHTML = hudElement;
-    filterTimers();
   };
   const updateHudDisplay = debounceHudUpdate(_updateHudDisplay, 100);
   const hudRemovalTimeouts = {};
@@ -831,6 +846,7 @@
     }
     updateInventory(updatedInventory, { isDetailed: true, overwriteMissing: true });
     GM_setValue(STORAGE_KEYS.INVENTORY_LIMIT, currentLimit);
+    GM_setValue(STORAGE_KEYS.PRODUCTION_LAST_UPDATE, Date.now());
     return response;
   };
   const inventoryListener = {
@@ -1126,6 +1142,25 @@
       listener: handleWheelSpin
     }
   ];
+  const handleBeachball = (response) => {
+    try {
+      const itemMatch = response.match(/<strong>(.*?)<\\\/strong>/);
+      const quantityMatch = response.match(/class='itemimg'> x(\d+)/);
+      if (itemMatch && itemMatch[1]) {
+        const itemName = itemMatch[1];
+        const quantity = quantityMatch && quantityMatch[1] ? parseInt(quantityMatch[1]) : 1;
+        updateInventory({ [itemName]: quantity }, { isAbsolute: false, resolveNames: true });
+      }
+    } catch (error) {
+      console.error("Error processing beachball response:", error);
+    }
+  };
+  const beachballWorkers = [
+    {
+      action: "beachball",
+      listener: handleBeachball
+    }
+  ];
   const workers = [
     ...explorationWorkers,
     ...fishingWorkers,
@@ -1134,7 +1169,8 @@
     ...itemUseWorkers,
     ...itemSendWorkers,
     ...miscWorkers,
-    ...farmWorkers
+    ...farmWorkers,
+    ...beachballWorkers
   ];
   const activeWorkers = /* @__PURE__ */ new Map();
   const workerActions = /* @__PURE__ */ new Set();
@@ -1230,7 +1266,7 @@
         continue;
       }
     }
-    GM_setValue(STORAGE_KEYS.HUD_TIMERS, updatedTimers);
+    GM_setValue(STORAGE_KEYS.HUD_TIMERS, { ...hudTimers, ...updatedTimers });
     return response;
   };
   const homeListener = {
@@ -1598,6 +1634,7 @@
     for (const recipe of recipeList) {
       const recipeId = recipe.dataset.id;
       const recipeName = recipe.dataset.name;
+      if (recipeId === void 0) continue;
       recipeItems[recipeId] = {
         id: recipeId,
         name: recipeName,
@@ -1648,6 +1685,7 @@
     updateInventory(recipeItems, { isAbsolute: true, isDetailed: true });
     updateInventory(materialItems, { isAbsolute: true, resolveNames: true });
     GM_setValue(STORAGE_KEYS.RECIPES, recipes2);
+    GM_setValue(STORAGE_KEYS.PRODUCTION_LAST_UPDATE, Date.now());
     return response;
   };
   const workshopListener = {
@@ -1655,6 +1693,128 @@
     callback: parseWorkshop,
     urlMatch: [/^workshop\.php$/],
     passive: true
+  };
+  let production = GM_getValue(STORAGE_KEYS.PRODUCTION, {});
+  const setProduction = (value) => production = value;
+  let productionTimeout = null;
+  const acquireLock = () => {
+    const currentTime = Date.now();
+    const lockTimeout = 10 * 1e3;
+    const lockTime = GM_getValue(STORAGE_KEYS.PRODUCTION_LOCK, 0);
+    if (lockTime > currentTime - lockTimeout) return false;
+    GM_setValue(STORAGE_KEYS.PRODUCTION_LOCK, currentTime);
+    const newLockTime = GM_getValue(STORAGE_KEYS.PRODUCTION_LOCK);
+    return newLockTime === currentTime;
+  };
+  const releaseLock = () => {
+    GM_setValue(STORAGE_KEYS.PRODUCTION_LOCK, 0);
+  };
+  const tenMinuteProduction = (productionTime) => {
+    const updateBatch = Object.fromEntries(tenMinuteProductionItems.map((itemName) => [itemName, production[itemName] ?? 0]));
+    const hickoryActive = hudTimers[itemNameIdMap.get("Hickory Omelette")] > productionTime;
+    if (hickoryActive) {
+      updateBatch["Wood"] = Math.floor(production["Wood"] / 5);
+      updateBatch["Board"] = Math.floor(production["Board"] / 5);
+    }
+    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+  };
+  const hourlyProduction = () => {
+    const updateBatch = Object.fromEntries(hourlyProductionItems.map((itemName) => [itemName, production[itemName] ?? 0]));
+    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+  };
+  const getNextUpdate = (lastUpdate) => {
+    const nextUpdate = new Date(lastUpdate);
+    const isTenMinuteMark = nextUpdate.getUTCMinutes() % 10 === 0;
+    const productionNotYetRan = nextUpdate.getSeconds() < 15;
+    nextUpdate.setSeconds(15);
+    nextUpdate.setMilliseconds(0);
+    const shouldRunThisMinute = isTenMinuteMark && productionNotYetRan;
+    if (!shouldRunThisMinute) {
+      nextUpdate.setUTCMinutes(Math.ceil((nextUpdate.getUTCMinutes() + 1) / 10) * 10);
+    }
+    return nextUpdate;
+  };
+  const handleProduction = () => {
+    if (!acquireLock()) return scheduleProduction();
+    const lastUpdate = GM_getValue(STORAGE_KEYS.PRODUCTION_LAST_UPDATE, Date.now());
+    const nextUpdate = getNextUpdate(lastUpdate);
+    const currentTime = /* @__PURE__ */ new Date();
+    let finishedUpdate = null;
+    while (nextUpdate < currentTime) {
+      const updateMinute = nextUpdate.getUTCMinutes();
+      if (updateMinute % 10 === 0) {
+        tenMinuteProduction(nextUpdate);
+      }
+      if (updateMinute === 0) {
+        hourlyProduction();
+      }
+      finishedUpdate = +nextUpdate;
+      nextUpdate.setUTCMinutes(Math.ceil((updateMinute + 1) / 10) * 10);
+    }
+    if (finishedUpdate) GM_setValue(STORAGE_KEYS.PRODUCTION_LAST_UPDATE, finishedUpdate);
+    scheduleProduction();
+    releaseLock();
+  };
+  const scheduleProduction = () => {
+    const lastUpdate = GM_getValue(STORAGE_KEYS.PRODUCTION_LAST_UPDATE, Date.now());
+    const nextUpdate = getNextUpdate(lastUpdate);
+    const currentTime = Date.now();
+    const delay = Math.max(nextUpdate - currentTime, 0);
+    clearTimeout(productionTimeout);
+    productionTimeout = setTimeout(handleProduction, delay);
+  };
+  const parseProductionSection = (possibleSections, items) => {
+    const parsedProductions = {};
+    for (const itemName of items) {
+      const itemDetails = inventoryCache[itemNameIdMap.get(itemName)];
+      if (!itemDetails) continue;
+      const sections = Array.from(possibleSections);
+      const targetSection = sections.find((section) => {
+        var _a2;
+        return ((_a2 = section.querySelector("img.itemimg")) == null ? void 0 : _a2.src) === itemDetails.image;
+      });
+      if (!targetSection) continue;
+      const addButton = targetSection.querySelector(".item-after > button.button");
+      if (!addButton) continue;
+      parsedProductions[itemName] = Number(addButton.dataset.current);
+    }
+    return parsedProductions;
+  };
+  const parseProductionChildren = (children) => {
+    const output = {};
+    for (const child of children) {
+      if (child.nodeType !== 3) continue;
+      const productionText = child.textContent.trim();
+      const spaceIndex = productionText.indexOf(" ");
+      if (spaceIndex === -1) continue;
+      const itemName = productionText.slice(spaceIndex + 1).trim();
+      const countString = productionText.slice(0, spaceIndex);
+      const itemCount = parseNumberWithCommas(countString);
+      if (Number.isNaN(itemCount)) {
+        continue;
+      }
+      output[itemName] = itemCount;
+    }
+    return output;
+  };
+  const parseProductionRows = (parsedResponse) => {
+    var _a2;
+    const sections = Array.from(parsedResponse.querySelectorAll(".content-block-title"));
+    const targetSection = sections.find((section) => section.innerText === "Around Your Farm");
+    if (!targetSection) return;
+    let parsedProductionMap = {};
+    const buildingLinks = (_a2 = targetSection.nextElementSibling) == null ? void 0 : _a2.querySelectorAll(".item-link");
+    for (const buildingLink of buildingLinks) {
+      const detailsElement = buildingLink.querySelector(".item-after > span");
+      if (!detailsElement) continue;
+      const buildingProduction = parseProductionChildren(detailsElement.childNodes);
+      parsedProductionMap = { ...parsedProductionMap, ...buildingProduction };
+    }
+    const updatedProduction = { ...production };
+    for (const [itemName, key] of Object.entries(farmProductionKeys)) {
+      updatedProduction[itemName] = parsedProductionMap[key] ?? 0;
+    }
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
   };
   const updateCropCount = (event) => {
     var _a2;
@@ -1667,18 +1827,109 @@
     targetElement.innerText = `${cropInventory} ${cropName} in inventory`;
   };
   unsafeWindow.updateCropCount = updateCropCount;
-  const cropCount = (response) => {
+  const parseFarm = (response) => {
     const parsedResponse = parseHtml(response);
     const cropSelect = parsedResponse.querySelector("select.seedid");
     cropSelect.setAttribute("onchange", "updateCropCount(event)");
     updateCropCount({ target: cropSelect });
+    parseProductionRows(parsedResponse);
     return parsedResponse.innerHTML;
   };
   const xfarmListener = {
-    name: "Crop Count",
-    callback: cropCount,
+    name: "Farm",
+    callback: parseFarm,
     urlMatch: [/^xfarm\.php\?id=/],
     passive: false
+  };
+  const parseSawmill = (response) => {
+    const parsedResponse = parseHtml(response);
+    const sections = Array.from(parsedResponse.querySelectorAll("li > .item-content"));
+    const parsedProductions = parseProductionSection(sections, ["Wood", "Board", "Oak"]);
+    const updatedProduction = { ...production, ...parsedProductions };
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
+    return response;
+  };
+  const sawmillListener = {
+    name: "Sawmill",
+    callback: parseSawmill,
+    urlMatch: [/^sawmill\.php/],
+    passive: true
+  };
+  const parseQuarry = (response) => {
+    const parsedResponse = parseHtml(response);
+    const sections = Array.from(parsedResponse.querySelectorAll("li > .item-content"));
+    const parsedProductions = parseProductionSection(sections, ["Stone", "Coal"]);
+    if (parsedProductions["Stone"]) {
+      parsedProductions["Sandstone"] = parsedProductions["Stone"];
+    }
+    const updatedProduction = { ...production, ...parsedProductions };
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
+    return response;
+  };
+  const quarryListener = {
+    name: "Quarry",
+    callback: parseQuarry,
+    urlMatch: [/^quarry\.php/],
+    passive: true
+  };
+  const parseHayfield = (response) => {
+    const parsedResponse = parseHtml(response);
+    const sections = Array.from(parsedResponse.querySelectorAll("li > .item-content"));
+    const parsedProductions = parseProductionSection(sections, ["Straw"]);
+    const updatedProduction = { ...production, ...parsedProductions };
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
+    return response;
+  };
+  const hayfieldListener = {
+    name: "Hayfield",
+    callback: parseHayfield,
+    urlMatch: [/^hayfield\.php/],
+    passive: true
+  };
+  const parseSteelworks = (response) => {
+    const parsedResponse = parseHtml(response);
+    const sections = Array.from(parsedResponse.querySelectorAll("li > .item-content"));
+    const parsedProductions = parseProductionSection(sections, ["Steel"]);
+    if (parsedProductions["Steel"]) {
+      parsedProductions["Steel Wire"] = Math.round(parsedProductions["Steel"] * 1 / 3);
+    }
+    const updatedProduction = { ...production, ...parsedProductions };
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
+    return response;
+  };
+  const steelworksListener = {
+    name: "Steelworks",
+    callback: parseSteelworks,
+    urlMatch: [/^steelworks\.php/],
+    passive: true
+  };
+  const parseTroutFarm = (response) => {
+    const parsedResponse = parseHtml(response);
+    const sections = Array.from(parsedResponse.querySelectorAll("li > .item-content"));
+    const parsedProductions = parseProductionSection(sections, ["Grubs", "Minnows"]);
+    const updatedProduction = { ...production, ...parsedProductions };
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
+    return response;
+  };
+  const troutFarmListener = {
+    name: "Trout Farm",
+    callback: parseTroutFarm,
+    urlMatch: [/^troutfarm\.php/],
+    passive: true
+  };
+  const parseWormHabitat = (response) => {
+    const parsedResponse = parseHtml(response);
+    const sections = Array.from(parsedResponse.querySelectorAll("li > .item-content"));
+    const parsedProductions = parseProductionSection(sections, ["Worms", "Gummy Worms", "Mealworms"]);
+    const updatedProduction = { ...production, ...parsedProductions };
+    GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
+    return response;
+  };
+  const wormHabitatListener = {
+    name: "Worm Habitat",
+    callback: parseWormHabitat,
+    urlMatch: [/^hab\.php/],
+    passive: true
   };
   const interceptXHR = (handler) => {
     const originalOpen = XMLHttpRequest.prototype.open;
@@ -1769,7 +2020,6 @@
   };
   const setupAuxClickHandler = () => {
     document.body.addEventListener("auxclick", (event) => {
-      if (event.button !== 1) return;
       if (event.target.id === "frpg-hud-toggle") {
         event.preventDefault();
         event.stopPropagation();
@@ -1896,6 +2146,10 @@
     [STORAGE_KEYS.CRAFTWORKS]: (value) => {
       setCraftworks(value);
       return false;
+    },
+    [STORAGE_KEYS.PRODUCTION]: (value) => {
+      setProduction(value);
+      return false;
     }
   };
   const setupStorageListeners = () => {
@@ -1918,7 +2172,13 @@
     craftworksListener,
     locksmithListener,
     spinListener,
-    townsfolkListener
+    townsfolkListener,
+    sawmillListener,
+    quarryListener,
+    hayfieldListener,
+    steelworksListener,
+    troutFarmListener,
+    wormHabitatListener
   ];
   const responseHandler = (response, url, type) => {
     for (const listener of listeners) {
@@ -1939,6 +2199,7 @@
     }
     return response;
   };
+  scheduleProduction();
   setupEventListeners();
   setupStorageListeners();
   interceptXHR(responseHandler);
