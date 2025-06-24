@@ -17,7 +17,7 @@ import { setupEventListeners } from "./utils/listeners";
 import { setupStorageListeners } from "./utils/storage";
 
 
-export const listeners = [
+const listeners = [
     workerListener,
     hudListener,
     xfarmListener,
@@ -33,7 +33,7 @@ export const listeners = [
     townsfolkListener,
 ];
 
-export const responseHandler = (response, url, type) => {
+const responseHandler = (response, url, type) => {
     for (const listener of listeners) {
         for (const regex of listener.urlMatch) {
             if (!regex.test(url)) continue;
@@ -61,3 +61,11 @@ setupStorageListeners();
 
 interceptXHR(responseHandler);
 interceptFetch(responseHandler);
+
+/* eslint-disable no-undef */
+// Only export during testing
+// Prevents the bundler from injecting `exports` into the build
+if (__TEST_MODE && typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = { listeners, responseHandler };
+}
+/* eslint-enable no-undef */

@@ -8,7 +8,10 @@ const outputFilename = 'frpg-hud.user.js';
 const metadataPath = join(__dirname, 'src', 'metadata.js');
 const metadata = readFileSync(metadataPath, 'utf8');
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+    define: {
+        __TEST_MODE: mode === "test",
+    },
     build: {
         lib: {
             entry: 'src/main.js',
@@ -32,6 +35,9 @@ export default defineConfig({
             // Or a plugin that adds it using renderChunk
             // The only way I found which worked:
 
+            // Otherwise the header gets added multiple times
+            if (mode === "test") return;
+
             const filePath = join(__dirname, 'dist', outputFilename);
             const content = readFileSync(filePath, 'utf8');
 
@@ -43,4 +49,4 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['./test/setup.js'],
     },
-});
+}));
