@@ -909,6 +909,7 @@
   ];
   const extractNumber = (element) => parseNumberWithCommas(element.innerText.trim());
   const handleExploration = (response, parameters) => {
+    if (response.startsWith("You need at least")) return;
     const parsedResponse = parseHtml(response);
     const foundItems = parsedResponse.querySelectorAll(`img[src^="/img/items/"]`);
     const updateBatch = {};

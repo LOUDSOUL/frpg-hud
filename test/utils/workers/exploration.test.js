@@ -100,4 +100,23 @@ describe('Exploration response handler functionality', () => {
       { isAbsolute: false, resolveNames: true, processCraftworks: true }
     );
   });
+
+  it("should handle cider use without enough stamina", () => {
+    const response = `You need at least <strong>1,950x</strong> stamina to use a cider here.`;
+    const url = "worker.php?go=explore&cider=1&id=5";
+    const type = "ajax";
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+    let result;
+    expect(() => {
+      result = responseHandler(response, url, type);
+    }).not.toThrow();
+
+    expect(result).toBe(response);
+    expect(updateInventory).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore(); // clean up after the test    
+  })
 });
