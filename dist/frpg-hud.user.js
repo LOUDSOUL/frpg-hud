@@ -1840,13 +1840,17 @@
     GM_setValue(STORAGE_KEYS.PRODUCTION, updatedProduction);
   };
   const updateCropCount = (event) => {
-    var _a2;
+    var _a2, _b;
     const selectElement = event.target;
     const targetElement = selectElement.parentElement.parentElement.firstElementChild;
     const seedId = selectElement.value;
-    const cropName = selectElement.selectedOptions[0].dataset.name.slice(0, -6);
+    const cropName = (_a2 = selectElement.selectedOptions[0].dataset.name) == null ? void 0 : _a2.slice(0, -6);
+    if (!cropName) {
+      targetElement.innerText = "No crop selected";
+      return;
+    }
     const cropId = seedCrop[seedId] || null;
-    const cropInventory = cropId === null ? "??" : ((_a2 = inventoryCache[cropId]) == null ? void 0 : _a2.count) ?? "??";
+    const cropInventory = cropId === null ? "??" : ((_b = inventoryCache[cropId]) == null ? void 0 : _b.count) ?? "??";
     targetElement.innerText = `${cropInventory} ${cropName} in inventory`;
   };
   unsafeWindow.updateCropCount = updateCropCount;

@@ -9,7 +9,12 @@ const updateCropCount = (event) => {
     const targetElement = selectElement.parentElement.parentElement.firstElementChild;
 
     const seedId = selectElement.value;
-    const cropName = selectElement.selectedOptions[0].dataset.name.slice(0, -6);
+    const cropName = selectElement.selectedOptions[0].dataset.name?.slice(0, -6);
+
+    if (!cropName) {
+        targetElement.innerText = "No crop selected";
+        return;
+    };
 
     const cropId = seedCrop[seedId] || null;
     const cropInventory = cropId === null ? "??" : inventoryCache[cropId]?.count ?? "??";
