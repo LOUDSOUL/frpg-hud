@@ -1175,19 +1175,45 @@
       listener: (response) => handleOrangeJuiceUse(response, { get: () => 1 })
     }
   ];
+  const parseItemCount = (itemString) => {
+    let [itemName, countText] = itemString.split("(x");
+    itemName = itemName.trim();
+    const itemCount = parseNumberWithCommas(countText.split(")")[0]);
+    return [itemName, itemCount];
+  };
   const handleWheelSpin = (response) => {
     const parsedResponse = parseHtml(response.split("|")[1]);
     const rewardText = parsedResponse.innerText.split(":")[1];
-    let [itemName, countText] = rewardText.split("(x");
-    itemName = itemName.trim();
+    let [itemName, itemCount] = parseItemCount(rewardText);
     if (itemName === "Apples") itemName = "Apple";
-    const itemCount = Number(countText.split(")")[0]);
     updateInventory({ [itemName]: itemCount }, { isAbsolute: false, resolveNames: true });
+  };
+  const handleWishingWellThrow = (response, parameters) => {
+    var _a2;
+    if (response === "cannotafford") return;
+    const thrownId = parameters.get("id");
+    const thrownCount = Number(parameters.get("amt"));
+    const thrownItemName = (_a2 = inventoryCache[thrownId]) == null ? void 0 : _a2.name;
+    const parsedResponse = parseHtml(response);
+    const updateBatch = {};
+    const items = parsedResponse.querySelectorAll("img");
+    for (const item of items) {
+      let [itemName, itemCount] = parseItemCount(item.nextSibling.textContent);
+      updateBatch[itemName] = itemCount;
+    }
+    if (thrownItemName) {
+      updateBatch[thrownItemName] = -thrownCount;
+    }
+    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true });
   };
   const miscWorkers = [
     {
       action: "spinfirst",
       listener: handleWheelSpin
+    },
+    {
+      action: "tossmanyintowell",
+      listener: handleWishingWellThrow
     }
   ];
   const handleBeachball = (response) => {
