@@ -1149,6 +1149,14 @@
     const amount = parameters.get("amt");
     updateInventory({ Apple: -amount }, { isAbsolute: false, resolveNames: true });
   };
+  const handleAllAppleUse = (response) => {
+    if (!response.toLowerCase().includes("you ate")) return;
+    updateInventory({ Apple: 0 }, { isAbsolute: true, resolveNames: true });
+  };
+  const handleAllOrangeJuiceUse = (response) => {
+    if (!response.toLowerCase().includes("you drank")) return;
+    updateInventory({ "Orange Juice": 0 }, { isAbsolute: true, resolveNames: true });
+  };
   const itemUseWorkers = [
     {
       action: "useitem",
@@ -1173,6 +1181,14 @@
     {
       action: "drinkoj",
       listener: (response) => handleOrangeJuiceUse(response, { get: () => 1 })
+    },
+    {
+      action: "eatapples",
+      listener: handleAllAppleUse
+    },
+    {
+      action: "drinkojs",
+      listener: handleAllOrangeJuiceUse
     }
   ];
   const parseItemCount = (itemString) => {
