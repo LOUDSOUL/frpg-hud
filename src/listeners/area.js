@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from "../constants";
 import { setHudDetails } from "../utils/hud";
 import { fetchLocationData } from "../utils/location";
 
@@ -14,6 +15,8 @@ const parseArea = (response, url) => {
     };
 
     setHudDetails(locationData, url);
+    GM_setValue(STORAGE_KEYS.HUD_STASH, null);
+
     return response;
 };
 

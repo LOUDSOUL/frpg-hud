@@ -1307,6 +1307,7 @@
       return response;
     }
     setHudDetails(locationData, url);
+    GM_setValue(STORAGE_KEYS.HUD_STASH, null);
     return response;
   };
   const areaListener = {
