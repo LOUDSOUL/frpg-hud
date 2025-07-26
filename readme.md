@@ -56,7 +56,7 @@ If you do not have the "Farm Dashboard" perk from the supply shop, also visit th
 
 When you visit an exploration or fishing zone for the first time, it will prompt you to go to its details page. This is only required to be done once. 
 
-Same with supply packs like Large Chest 01 in the locksmith page. You need to visit the chest's page once to show them anytime you click inside that chest's row.
+Same with supply packs like Large Chest 01 in the locksmith page. You need to either visit the chest's page or open them to record their content. Once recorded, their content will then be shown anytime you click inside that supply pack's row.
 
 
 ## Known Issues
@@ -78,6 +78,8 @@ Items crafted using quick actions get added to the HUD temporarily and get remov
 - Stone -> Iron Cup -> Send to Lorn
 
 The Refresh button functions the same as manually opening the inventory page, updating item counts instantly.
+
+When you activate a loadout, the Continue (C) button turns into Restore "R" button. Clicking it will restore the previous items in the HUD.
 
 You can use the "Meals" and "Cookies" loadouts to quickly use use meals without having to open the inventory. You can also perform a Quick Action on the meal timer to use another one.
 
