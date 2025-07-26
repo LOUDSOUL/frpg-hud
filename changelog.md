@@ -1,4 +1,15 @@
-# Version 2025-06-15
+# Version 2025-07-26
+- Added 10 minute/hourly production tracking
+- Added ability to restore original items after activating a loadout
+- Added detection for supply pack contents upon opening them
+- Added listeners for production buildings, wishing well throws and beach ball
+- Allow right clicking to perform quick actions
+- Fixed workshop parsing if no item is added as 'favourite'
+- Fixed error when cider gets used with insufficient stamina
+- Fixed error displaying crop counts when no crop was selected
+
+
+# Version 2025-06-16
 - Fixed loadout items not in inventory appearing as `undefined`
 
 
