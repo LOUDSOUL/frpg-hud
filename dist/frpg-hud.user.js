@@ -1110,8 +1110,12 @@
     if (!itemDetails) return;
     const mealTimeSeconds = mealTimeExceptions[itemDetails.name] ?? 5 * 60;
     const endTime = Date.now() + mealTimeSeconds * 1e3;
-    const updatedTimers = hudTimers;
-    hudTimers[itemId] = endTime;
+    const updatedTimers = { ...hudTimers };
+    if (updatedTimers[itemId] && updatedTimers[itemId] > Date.now()) {
+      updatedTimers[itemId] += mealTimeSeconds * 1e3;
+    } else {
+      updatedTimers[itemId] = endTime;
+    }
     GM_setValue(STORAGE_KEYS.HUD_TIMERS, updatedTimers);
     updateInventory({ [itemId]: -1 }, { isAbsolute: false });
   };

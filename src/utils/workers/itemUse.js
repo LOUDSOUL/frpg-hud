@@ -17,8 +17,13 @@ const handleMealUse = (response, parameters) => {
     const mealTimeSeconds = mealTimeExceptions[itemDetails.name] ?? (5 * 60);
     const endTime = Date.now() + (mealTimeSeconds * 1000);
 
-    const updatedTimers = hudTimers;
-    hudTimers[itemId] = endTime;
+    const updatedTimers = { ...hudTimers };
+
+    if (updatedTimers[itemId] && updatedTimers[itemId] > Date.now()) {
+        updatedTimers[itemId] += mealTimeSeconds * 1000;
+    } else {
+        updatedTimers[itemId] = endTime;
+    }
 
     GM_setValue(STORAGE_KEYS.HUD_TIMERS, updatedTimers);
     updateInventory({ [itemId]: -1 }, { isAbsolute: false });
@@ -49,7 +54,7 @@ const handleLocksmithOpen = (response, parameters) => {
 
     updateInventory(updatedInventory, { isAbsolute: false, resolveNames: true, processCraftworks: true });
     if (updateSupplyPacks && supplyPackName && supplyPackName !== "Void Bag") {
-        GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, {...supplyPacks, [supplyPackName]: supplyPackData });
+        GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, { ...supplyPacks, [supplyPackName]: supplyPackData });
     }
 };
 
