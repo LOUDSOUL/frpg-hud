@@ -2,6 +2,8 @@ import { updateInventory } from "../inventory";
 
 
 const handleFarmHarvest = (response) => {
+    if (response === "") return;
+
     const parsedResponse = JSON.parse(response);
     const updatedInventory = {};
     for (const cropId of Object.keys(parsedResponse.drops)) {
