@@ -105,6 +105,10 @@ export const defaultSettings = {
         label: "Run craftworks simulation",
         default: true,
     },
+    hudStashEnabled: {
+        label: "Enable HUD stash (Restore Button)",
+        default: true,
+    },
 };
 
 export const farmProductionKeys = {

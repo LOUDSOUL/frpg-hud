@@ -147,6 +147,10 @@
     processCraftworks: {
       label: "Run craftworks simulation",
       default: true
+    },
+    hudStashEnabled: {
+      label: "Enable HUD stash (Restore Button)",
+      default: true
     }
   };
   const farmProductionKeys = {
@@ -444,7 +448,7 @@
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
                     <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    ${hudStash === null ? continueButton : restoreButton}
+                    ${hudStash !== null && settings.hudStashEnabled ? restoreButton : continueButton}
                 </div>`;
     hudHtml += `</div>`;
     return hudHtml;
