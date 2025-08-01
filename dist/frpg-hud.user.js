@@ -909,7 +909,6 @@
   ];
   const extractNumber = (element) => parseNumberWithCommas(element.innerText.trim());
   const handleExploration = (response, parameters) => {
-    if (response.startsWith("You need at least")) return;
     const parsedResponse = parseHtml(response);
     const foundItems = parsedResponse.querySelectorAll(`img[src^="/img/items/"]`);
     const updateBatch = {};
@@ -917,6 +916,7 @@
     const lemonadeUsed = parameters.get("go") === "drinklm";
     for (const itemImage of foundItems) {
       const itemName = itemImage.alt.trim();
+      if (!itemName) continue;
       let itemCount = updateBatch[itemName] ?? 0;
       if (itemImage.style.filter.includes("grayscale")) {
         itemCount = inventoryLimit;
@@ -928,9 +928,10 @@
       updateBatch[itemName] = itemCount;
     }
     const updateItemDifference = (itemName, selector) => {
-      const count = extractNumber(parsedResponse.querySelector(selector));
-      const difference = count - inventoryCache[itemNameIdMap.get(itemName)].count;
-      updateBatch[itemName] = difference;
+      const selectedItem = parsedResponse.querySelector(selector);
+      if (!selectedItem) return;
+      const count = extractNumber(selectedItem);
+      updateBatch[itemName] = count - inventoryCache[itemNameIdMap.get(itemName)].count;
     };
     if (ciderUsed || lemonadeUsed) {
       const itemUsed = ciderUsed ? "Apple Cider" : parsedResponse.querySelector("#lmtyp").innerText.trim();
@@ -938,7 +939,9 @@
       updateItemDifference(itemUsed, countSelector);
     }
     updateItemDifference("Apple", "#applecnt");
-    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    if (Object.keys(updateBatch).length > 0) {
+      updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    }
   };
   const explorationWorkers = [
     {

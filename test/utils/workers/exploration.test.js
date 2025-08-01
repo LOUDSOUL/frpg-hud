@@ -118,5 +118,24 @@ describe('Exploration response handler functionality', () => {
     expect(consoleErrorSpy).not.toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore(); // clean up after the test    
+  });
+
+  it('should handle SANDWYRM encounter without crashing or updating inventory', () => {
+    const response = `<img src='/img/items/l_02.png' class='itemimg'><br/>A giant SANDWYRM has appeared! You lost Stamina!`;
+    const url = "worker.php?go=explore&id=13";
+    const type = "ajax";
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+    let result;
+    expect(() => {
+      result = responseHandler(response, url, type);
+    }).not.toThrow();
+
+    expect(result).toBe(response);
+    expect(updateInventory).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   })
 });
