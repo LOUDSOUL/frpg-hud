@@ -54,3 +54,50 @@ describe('Wishing well throw parsing', () => {
         expect(updateInventory).not.toHaveBeenCalled();
     });
 });
+
+describe('Rewards claim parsing', () => {
+    beforeEach(vi.resetAllMocks);
+
+    it('should handle claiming rewards', () => {
+        const response = `Rewards Earned:<br/>
+                            <img src='/img/items/seadragon.png' style='width:16px'> Sea Dragon x10<br/>
+                            <img src='/img/items/spikey.png' style='width:16px'> Spiked Shell x10<br/>
+                            <img src='/img/items/sunflower.png' style='width:16px'> Sunflower x10<br/>`;
+        const url = "worker.php?go=collectrew&type=Quests";
+        const type = "ajax";
+
+        const result = responseHandler(response, url, type);
+
+        expect(result).toBe(response);
+        expect(updateInventory).toHaveBeenCalledWith(
+            {
+                "Sea Dragon": 10,
+                "Spiked Shell": 10,
+                "Sunflower": 10,
+            },
+            { isAbsolute: false, resolveNames: true }
+        );
+    });
+
+    it('should handle no rewards left', () => {
+        const response = `No Rewards Left`;
+        const url = "worker.php?go=collectrew&type=Quests";
+        const type = "ajax";
+
+        const result = responseHandler(response, url, type);
+
+        expect(result).toBe(response);
+        expect(updateInventory).not.toHaveBeenCalled();
+    });
+
+    it('should handle empty response', () => {
+        const response = ``;
+        const url = "worker.php?go=collectrew&type=Quests";
+        const type = "ajax";
+
+        const result = responseHandler(response, url, type);
+
+        expect(result).toBe(response);
+        expect(updateInventory).not.toHaveBeenCalled();
+    });
+});

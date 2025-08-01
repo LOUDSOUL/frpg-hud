@@ -1201,8 +1201,8 @@
     }
   ];
   const parseItemCount = (itemString) => {
-    let [itemName, countText] = itemString.split("(x");
-    itemName = itemName.trim();
+    let [itemName, countText] = itemString.split("x");
+    itemName = itemName.replace("(", "").trim();
     const itemCount = parseNumberWithCommas(countText.split(")")[0]);
     return [itemName, itemCount];
   };
@@ -1231,6 +1231,18 @@
     }
     updateInventory(updateBatch, { isAbsolute: false, resolveNames: true });
   };
+  const handleRewardsClaim = (response) => {
+    if (response === "") return;
+    if (response.toLowerCase().includes("no rewards left")) return;
+    const parsedResponse = parseHtml(response);
+    const updateBatch = {};
+    const items = parsedResponse.querySelectorAll("img");
+    for (const item of items) {
+      let [itemName, itemCount] = parseItemCount(item.nextSibling.textContent);
+      updateBatch[itemName] = itemCount;
+    }
+    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true });
+  };
   const miscWorkers = [
     {
       action: "spinfirst",
@@ -1239,6 +1251,10 @@
     {
       action: "tossmanyintowell",
       listener: handleWishingWellThrow
+    },
+    {
+      action: "collectrew",
+      listener: handleRewardsClaim
     }
   ];
   const handleBeachball = (response) => {
