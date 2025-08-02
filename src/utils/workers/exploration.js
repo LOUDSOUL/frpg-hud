@@ -6,8 +6,6 @@ import { parseNumberWithCommas } from "../numbers";
 const extractNumber = (element) => parseNumberWithCommas(element.innerText.trim());
 
 const handleExploration = (response, parameters) => {
-    if (response.startsWith("You need at least")) return;
-
     const parsedResponse = parseHtml(response);
     const foundItems = parsedResponse.querySelectorAll(`img[src^="/img/items/"]`);
     const updateBatch = {};
@@ -17,6 +15,7 @@ const handleExploration = (response, parameters) => {
 
     for (const itemImage of foundItems) {
         const itemName = itemImage.alt.trim();
+        if (!itemName) continue;
         let itemCount = updateBatch[itemName] ?? 0;
 
         if (itemImage.style.filter.includes("grayscale")) {
@@ -25,15 +24,16 @@ const handleExploration = (response, parameters) => {
             itemCount += parseNumberWithCommas(itemImage.nextSibling.textContent.trim().split("x")[1].slice(0, -1));
         } else {
             itemCount += 1;
-        };
+        }
 
         updateBatch[itemName] = itemCount;
     }
 
     const updateItemDifference = (itemName, selector) => {
-        const count = extractNumber(parsedResponse.querySelector(selector));
-        const difference = count - inventoryCache[itemNameIdMap.get(itemName)].count;
-        updateBatch[itemName] = difference;
+        const selectedItem = parsedResponse.querySelector(selector);
+        if (!selectedItem) return;
+        const count = extractNumber(selectedItem);
+        updateBatch[itemName] = count - inventoryCache[itemNameIdMap.get(itemName)].count;
     }
 
     // #cidercnt is present in regular explores too but always shows 0
@@ -44,7 +44,9 @@ const handleExploration = (response, parameters) => {
     }
     updateItemDifference("Apple", "#applecnt");
 
-    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    if (Object.keys(updateBatch).length > 0) {
+        updateInventory(updateBatch, {isAbsolute: false, resolveNames: true, processCraftworks: true});
+    }
 };
 
 const explorationWorkers = [
