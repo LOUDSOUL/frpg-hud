@@ -40,7 +40,8 @@
     SETTINGS: "frpg.settings",
     PRODUCTION: "frpg.production",
     PRODUCTION_LAST_UPDATE: "frpg.production-last-update",
-    PRODUCTION_LOCK: "frpg.production-lock"
+    PRODUCTION_LOCK: "frpg.production-lock",
+    QUESTS: "frpg.quests"
   };
   const HUD_DISPLAY_MODES = {
     INVENTORY: "INVENTORY",
@@ -1276,6 +1277,30 @@
       listener: handleBeachball
     }
   ];
+  let quests = GM_getValue(STORAGE_KEYS.QUESTS, {});
+  const setQuests = (updatedQuests) => {
+    quests = updatedQuests;
+  };
+  const handleQuestClaim = (response, parameters) => {
+    if (response === "") return;
+    if (response === "already") return;
+    if (response !== "success") return;
+    const questId = parameters.get("id");
+    const questDetails = quests[questId];
+    if (!questDetails) return;
+    const requestedItems = { ...questDetails.request };
+    for (const [name, quantity] of Object.entries(requestedItems)) {
+      requestedItems[name] = -quantity;
+    }
+    const updateBatch = { ...questDetails.reward, ...requestedItems };
+    updateInventory(updateBatch, { isAbsolute: false, resolveNames: true });
+  };
+  const questWorkers = [
+    {
+      action: "collectquest",
+      listener: handleQuestClaim
+    }
+  ];
   const workers = [
     ...explorationWorkers,
     ...fishingWorkers,
@@ -1285,7 +1310,8 @@
     ...itemSendWorkers,
     ...miscWorkers,
     ...farmWorkers,
-    ...beachballWorkers
+    ...beachballWorkers,
+    ...questWorkers
   ];
   const activeWorkers = /* @__PURE__ */ new Map();
   const workerActions = /* @__PURE__ */ new Set();
@@ -2027,6 +2053,59 @@
     urlMatch: [/^hab\.php/],
     passive: true
   };
+  const parseQuest = (response, url) => {
+    const urlParameters = new URLSearchParams(url.split("?")[1]);
+    const questId = urlParameters.get("id");
+    const parsedResponse = parseHtml(response);
+    const questDetails = {};
+    const updateBatch = {};
+    const sections = parsedResponse.querySelectorAll(".content-block-title");
+    for (const section of sections) {
+      const sectionTitle = section.innerText;
+      if (!["Items Requested", "Rewards"].includes(sectionTitle)) continue;
+      const sectionItems = section.nextElementSibling.querySelectorAll("a.item-link");
+      const sectionDetails = {};
+      for (const sectionItem of sectionItems) {
+        const urlMatch2 = new URLSearchParams(sectionItem.href.split("?")[1]);
+        const itemId = urlMatch2.get("id");
+        const itemName = sectionItem.querySelector(".item-title > strong").innerText.trim();
+        const itemImage = sectionItem.querySelector("img.itemimg").src;
+        const itemRequirementText = sectionItem.querySelector(".item-after").innerText;
+        const itemRequirement = parseNumberWithCommas(itemRequirementText.replace("x", "").trim());
+        const itemDetails = { id: itemId, name: itemName, image: itemImage };
+        const progressbar = sectionItem.querySelector(".progressbar");
+        if (progressbar) {
+          const quantityElement = progressbar.previousElementSibling;
+          const quantityWords = quantityElement.textContent.trim().split(" ");
+          const quantity = parseNumberWithCommas(quantityWords[quantityWords.length - 1]);
+          itemDetails.count = quantity;
+        }
+        updateBatch[itemId] = itemDetails;
+        sectionDetails[itemName] = itemRequirement;
+      }
+      const key = sectionTitle === "Items Requested" ? "request" : "reward";
+      questDetails[key] = sectionDetails;
+    }
+    const updatedQuests = { ...quests, [questId]: questDetails };
+    const pjButton = parsedResponse.querySelector(".drinkpj");
+    if (pjButton) {
+      const pjDetails = inventoryCache[itemNameIdMap.get("Peach Juice")];
+      if (pjDetails) {
+        const pjText = pjButton.innerText;
+        const pjCount = parseNumberWithCommas(pjText.split("(")[1].trim().slice(0, -1));
+        pjDetails.count = pjCount;
+        updateBatch[pjDetails.id] = pjDetails;
+      }
+    }
+    updateInventory(updateBatch, { isDetailed: true });
+    GM_setValue(STORAGE_KEYS.QUESTS, updatedQuests);
+  };
+  const questListener = {
+    name: "Quest",
+    callback: parseQuest,
+    urlMatch: [/^quest\.php/],
+    passive: true
+  };
   const interceptXHR = (handler) => {
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
@@ -2251,6 +2330,10 @@
     [STORAGE_KEYS.PRODUCTION]: (value) => {
       setProduction(value);
       return false;
+    },
+    [STORAGE_KEYS.QUESTS]: (value) => {
+      setQuests(value);
+      return false;
     }
   };
   const setupStorageListeners = () => {
@@ -2259,6 +2342,28 @@
         if (handler(newVal)) updateHudDisplay(k === STORAGE_KEYS.HUD_STATUS);
       });
     }
+  };
+  const getQuestId = (questUrl) => {
+    const urlParameters = new URLSearchParams(questUrl.split("?")[1]);
+    return urlParameters.get("id");
+  };
+  const parseQuests = (response) => {
+    const parsedResponse = parseHtml(response);
+    const currentQuests = parsedResponse.querySelectorAll('a.item-link[href^="quest.php"]');
+    const questIds = Array.from(currentQuests).map((quest) => getQuestId(quest.href));
+    const updatedQuests = { ...quests };
+    for (const questId of Object.keys(quests)) {
+      if (!questIds.includes(questId)) {
+        delete updatedQuests[questId];
+      }
+    }
+    GM_setValue(STORAGE_KEYS.QUESTS, updatedQuests);
+  };
+  const questsListener = {
+    name: "Quests",
+    callback: parseQuests,
+    urlMatch: [/^quests\.php/],
+    passive: true
   };
   const listeners = [
     workerListener,
@@ -2279,7 +2384,9 @@
     hayfieldListener,
     steelworksListener,
     troutFarmListener,
-    wormHabitatListener
+    wormHabitatListener,
+    questListener,
+    questsListener
   ];
   const responseHandler = (response, url, type) => {
     for (const listener of listeners) {

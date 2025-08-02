@@ -3,6 +3,7 @@ import { setCraftworks } from "./craftworks";
 import { handleHudTimerUpdate, setHudItems, setHudStash, setHudStatus, setHudUrl, updateHudDisplay } from "./hud";
 import { populateItemNameIdMap, setInventory, setInventoryLimit } from "./inventory";
 import { setProduction } from "./production";
+import { setQuests } from "./quests";
 import { setQuickActions } from "./quickActions";
 import { setSettings } from "./settings";
 import { setSupplyPacks } from "./supplyPack";
@@ -28,6 +29,7 @@ const storageListeners = {
     [STORAGE_KEYS.NEW_ITEM]: () => { populateItemNameIdMap(); return false; },
     [STORAGE_KEYS.CRAFTWORKS]: (value) => { setCraftworks(value); return false; },
     [STORAGE_KEYS.PRODUCTION]: (value) => { setProduction(value); return false; },
+    [STORAGE_KEYS.QUESTS]: (value) => { setQuests(value); return false },
 };
 
 export const setupStorageListeners = () => {

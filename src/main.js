@@ -17,6 +17,8 @@ import hayfieldListener from "./listeners/hayfield";
 import steelworksListener from "./listeners/steelworks";
 import troutFarmListener from "./listeners/troutfarm";
 import wormHabitatListener from "./listeners/hab";
+import questListener from "./listeners/quest";
+import questsListener from "./listeners/quests";
 
 import { interceptFetch, interceptXHR } from "./utils/interceptors";
 import { setupEventListeners } from "./utils/listeners";
@@ -44,6 +46,8 @@ const listeners = [
     steelworksListener,
     troutFarmListener,
     wormHabitatListener,
+    questListener,
+    questsListener,
 ];
 
 const responseHandler = (response, url, type) => {

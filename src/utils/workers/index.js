@@ -7,6 +7,7 @@ import itemSendWorkers from "./itemSend";
 import itemUseWorkers from "./itemUse";
 import miscWorkers from "./misc";
 import beachballWorkers from "./beachball";
+import questWorkers from "./quest";
 
 export const workers = [
     ...explorationWorkers,
@@ -18,4 +19,5 @@ export const workers = [
     ...miscWorkers,
     ...farmWorkers,
     ...beachballWorkers,
+    ...questWorkers,
 ];
