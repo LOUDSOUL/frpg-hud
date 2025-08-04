@@ -172,6 +172,111 @@
   };
   const tenMinuteProductionItems = ["Straw", "Stone", "Sandstone"];
   const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel Wire", "Oak", "Worms", "Gummy Worms", "Mealworms", "Grubs", "Minnows"];
+  const townsfolkGifts = {
+    "Baba Gec": {
+      "loves": ["Cabbage Stew", "Peach Juice", "Wooden Button"],
+      "likes": ["Leek", "Onion", "Rope", "Snail"]
+    },
+    "Beatrix": {
+      "loves": ["Black Powder", "Explosive", "Fireworks", "Iced Tea"],
+      "likes": ["Bird Egg", "Carbon Sphere", "Coal", "Hammer", "Hops", "Oak"]
+    },
+    "Borgen": {
+      "loves": ["Cheese", "Gold Catfish", "Wooden Box"],
+      "likes": ["Glass Orb", "Gold Carrot", "Gold Cucumber", "Gold Peas", "Milk", "Slimestone"]
+    },
+    "Buddy": {
+      "loves": ["Pirate Bandana", "Pirate Flag", "Purple Flower", "Valentines Card"],
+      "likes": ["Bone", "Bucket", "Giant Centipede", "Gold Peppers", "Gummy Worms", "Mushroom", "Snail", "Spider"]
+    },
+    "Captain Thomas": {
+      "loves": ["Fishing Net", "Gold Catfish", "Gold Drum", "Gold Trout", "Large Net"],
+      "likes": ["Blue Crab", "Minnows"]
+    },
+    "Cecil": {
+      "loves": ["Grasshopper", "Horned Beetle", "Leather", "MIAB", "Old Boot", "Shiny Beetle", "Yarn"],
+      "likes": ["Aquamarine", "Giant Centipede", "Grapes", "Ladder", "Slimestone", "Snail"]
+    },
+    "Charles": {
+      "loves": ["Apple", "Apple Cider", "Box of Chocolate 01", "Gold Carrot", "Peach", "Valentines Card"],
+      "likes": ["3-leaf Clover", "Carrot", "Grasshopper", "Twine"]
+    },
+    "Cid": {
+      "loves": ["Bomb", "Diamonds", "Explosive", "Mushroom Stew", "Safety Goggles", "Spider"],
+      "likes": ["Black Powder", "Blue Feathers", "Shimmer Stone", "Stone"]
+    },
+    "frank": {
+      "loves": ["Carrot", "Gold Carrot"],
+      "likes": ["Blue Dye", "Blue Feathers", "Bucket", "Caterpillar", "Feathers", "Grasshopper"]
+    },
+    "Gary Bearson V": {
+      "loves": ["Apple Cider", "Gold Trout", "Yarn", "You Rock Card"],
+      "likes": ["Feathers", "Oak", "Trout"]
+    },
+    "Geist": {
+      "loves": ["Gold Catfish", "Goldgill", "Sea Pincher Special", "Shrimp-a-Plenty"],
+      "likes": ["Blue Crab", "Green Chromis", "Stingray", "Yellow Perch"]
+    },
+    "George": {
+      "loves": ["Apple Cider", "Carbon Sphere", "Hide", "Mug of Beer", "Spider"],
+      "likes": ["Arrowhead", "Bird Egg", "Glass Orb", "Hops", "Mushroom Stew", "Orange Juice"]
+    },
+    "Holger": {
+      "loves": ["Gold Trout", "Mug of Beer", "Potato", "Wooden Table"],
+      "likes": ["Apple Cider", "Arrowhead", "Bluegill", "Carp", "Cheese", "Horn", "Largemouth Bass", "Mushroom Stew", "Peach", "Peas", "Trout"]
+    },
+    "Jill": {
+      "loves": ["Leather", "MIAB", "Mushroom Paste", "Peach", "Yellow Perch"],
+      "likes": ["Cheese", "Grapes", "Milk", "Old Boot", "Scrap Metal", "Tomato"]
+    },
+    "Lorn": {
+      "loves": ["Glass Orb", "Gold Peas", "Milk", "Shrimp", "Small Prawn"],
+      "likes": ["3-leaf Clover", "Apple Cider", "Bucket", "Green Parchment", "Iced Tea", "Iron Cup", "Peas", "Purple Parchment"]
+    },
+    "Mariya": {
+      "loves": ["Cat's Meow", "Leather Diary", "Mushroom Stew", "Onion Soup", "Over The Moon", "Quandary Chowder", "Sea Pincher Special", "Shrimp-a-Plenty"],
+      "likes": ["Cucumber", "Eggplant", "Eggs", "Iced Tea", "Milk", "Peach", "Radish"]
+    },
+    "Mummy": {
+      "loves": ["Bone", "Spider", "Valentines Card"],
+      "likes": ["Fish Bones", "Hammer", "Treat Bag 02", "Yarn"]
+    },
+    "Ric Ryph": {
+      "loves": ["5 Gold", "Hammer", "Mushroom Paste", "Shovel"],
+      "likes": ["Arrowhead", "Black Powder", "Bucket", "Carbon Sphere", "Coal", "Green Parchment", "Old Boot", "Unpolished Shimmer Stone"]
+    },
+    "ROOMBA": {
+      "loves": ["Carbon Sphere", "Scrap Metal"],
+      "likes": ["Glass Orb", "Hammer", "Scrap Wire"]
+    },
+    "Rosalie": {
+      "loves": ["Blue Dye", "Box of Chocolate 01", "Gold Carrot", "Green Dye", "Purple Dye", "Red Dye", "Valentines Card"],
+      "likes": ["Apple", "Apple Cider", "Aquamarine", "Carrot", "Caterpillar", "Fireworks", "Iced Tea", "Purple Flower"]
+    },
+    "Star Meerif": {
+      "loves": ["Blue Feathers", "Gold Feather"],
+      "likes": ["Eggs", "Feathers"]
+    },
+    "Thomas": {
+      "loves": ["Fishing Net", "Flier", "Gold Catfish", "Gold Trout", "Goldgill"],
+      "likes": ["Carp", "Drum", "Gummy Worms", "Iced Tea", "Largemouth Bass", "Mealworms", "Minnows"]
+    },
+    "Vincent": {
+      "loves": ["5 Gold", "Apple Cider", "Axe", "Lemonade", "Mushroom Paste", "Onion Soup", "Orange Juice"],
+      "likes": ["Acorn", "Apple", "Cheese", "Hops", "Horn", "Leather Diary", "Shovel", "Wooden Box"]
+    }
+  };
+  const likedItems = {};
+  for (const [townsfolk2, gifts] of Object.entries(townsfolkGifts)) {
+    gifts.loves.forEach((item) => {
+      if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
+      likedItems[item].loved.push(townsfolk2);
+    });
+    gifts.likes.forEach((item) => {
+      if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
+      likedItems[item].liked.push(townsfolk2);
+    });
+  }
   const parseHtml = (htmlString) => {
     const tempElement = document.createElement("div");
     tempElement.innerHTML = htmlString;
@@ -579,6 +684,171 @@
     ];
     myApp.actions(actions);
   };
+  let townsfolk = GM_getValue(STORAGE_KEYS.TOWNSFOLK, {});
+  const setTownsfolk = (newTownsfolk) => townsfolk = newTownsfolk;
+  const parseQuickSend = (panelRows) => {
+    const quickGiveRow = panelRows.find((row) => row.innerHTML.includes("npclevels.php"));
+    if (!quickGiveRow) return;
+    const updatedTownsfolk = {};
+    const options = quickGiveRow.querySelector(".quickgivedd").options;
+    Array.from(options).slice(1).forEach((opt) => {
+      const name = opt.innerText.split("(")[0].trim();
+      updatedTownsfolk[name] = opt.value;
+    });
+    GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
+  };
+  const confirmQuickAction = (itemName, quickAction, animate = true) => {
+    var _a2, _b, _c, _d;
+    const actions = [
+      { text: `Item: ${itemName}` },
+      { text: `Action: ${quickAction.action.toUpperCase()}`, onClick: () => promptQuickAction(itemName) },
+      { text: `Reserve: ${getFormattedNumber(quickAction.reserve)}`, onClick: () => promptReserveAmount(itemName, quickAction) }
+    ];
+    if (quickAction.action === "send") {
+      const loved = (_b = (_a2 = likedItems[itemName]) == null ? void 0 : _a2.loved) == null ? void 0 : _b.includes(quickAction.townsfolk);
+      const liked = (_d = (_c = likedItems[itemName]) == null ? void 0 : _c.liked) == null ? void 0 : _d.includes(quickAction.townsfolk);
+      const townsfolkText = `${quickAction.townsfolk}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
+      actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName) });
+    } else if (quickAction.action === "craft") {
+      const recipeDetails = inventoryCache[itemNameIdMap.get(quickAction.item)];
+      actions.push({
+        text: `Crafted Item: ${quickAction.item} (${getFormattedNumber(recipeDetails.count)})`,
+        onClick: () => promptQuickCraft(itemName, quickAction.bypassReserve)
+      });
+      actions.push({
+        text: `Bypass Reserve: ${quickAction.bypassReserve ? "Yes" : "No"}`,
+        onClick: () => {
+          quickAction.bypassReserve = !quickAction.bypassReserve;
+          confirmQuickAction(itemName, quickAction, false);
+        }
+      });
+    }
+    actions.push(
+      { text: "Confirm", onClick: () => updateQuickAction(itemName, quickAction) },
+      { text: "Cancel", color: "red" }
+    );
+    myApp.actions(actions, animate);
+  };
+  const setReserve = (quickAction, reserveAmount) => {
+    quickAction["reserve"] = reserveAmount;
+    return quickAction;
+  };
+  const promptReserveAmount = (itemName, quickAction) => {
+    const percent10 = parseInt(inventoryLimit * 0.1);
+    const percent25 = parseInt(inventoryLimit * 0.25);
+    const percent50 = parseInt(inventoryLimit * 0.5);
+    const percent90 = parseInt(inventoryLimit * 0.9);
+    const actions = [
+      { text: "Select the reserve amount:", label: true },
+      { text: "No reserve", onClick: () => confirmQuickAction(itemName, setReserve(quickAction, 0)) },
+      { text: `1,000x`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, 1e3)) },
+      { text: `${getFormattedNumber(percent10)} (10%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent10)) },
+      { text: `${getFormattedNumber(percent25)} (25%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent25)) },
+      { text: `${getFormattedNumber(percent50)} (50%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent50)) },
+      { text: `${getFormattedNumber(percent90)} (90%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent90)) },
+      { text: "Cancel", color: "red" }
+    ];
+    myApp.actions(actions);
+  };
+  const promptQuickSell = (itemName) => {
+    promptReserveAmount(itemName, { action: "sell" });
+  };
+  const getSendAction = (target) => ({ action: "send", townsfolk: target });
+  const promptQuickSend = (itemName, displayAll = false) => {
+    var _a2, _b, _c, _d;
+    if (!likedItems[itemName]) {
+      displayAll = true;
+    }
+    const actions = [
+      { text: "Select the townsfolk to send the item to: ", label: true }
+    ];
+    for (const target of Object.keys(townsfolk)) {
+      const loved = (_b = (_a2 = likedItems[itemName]) == null ? void 0 : _a2.loved) == null ? void 0 : _b.includes(target);
+      const liked = (_d = (_c = likedItems[itemName]) == null ? void 0 : _c.liked) == null ? void 0 : _d.includes(target);
+      if (!displayAll && !(liked || loved)) continue;
+      const targetText = `${target}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
+      actions.push({ text: targetText, onClick: () => promptReserveAmount(itemName, getSendAction(target)) });
+    }
+    if (!displayAll) {
+      actions.push({ text: "Show All", onClick: () => promptQuickSend(itemName, true) });
+    }
+    actions.push({ text: "Cancel", color: "red" });
+    myApp.actions(actions);
+  };
+  const isCraftable = (itemName) => {
+    for (const recipe of Object.values(recipes)) {
+      if (recipe[itemName]) return true;
+    }
+    return false;
+  };
+  const getCraftAction = (recipe, bypassReserve) => ({ action: "craft", item: recipe, bypassReserve });
+  const promptQuickCraft = (itemName, bypassReserve = false, animate = true) => {
+    if (!isCraftable(itemName)) {
+      const actions2 = [
+        { text: "No recipes unlocked for this item yet", label: true },
+        { text: "Cancel", color: "red" }
+      ];
+      myApp.actions(actions2);
+      return;
+    }
+    const craftableItems = [];
+    for (const [recipeName, ingredients] of Object.entries(recipes)) {
+      if (ingredients[itemName] !== void 0) craftableItems.push(recipeName);
+    }
+    const actions = [
+      { text: "Bypass other materials' reserve?", label: true },
+      { text: `Enabled: ${bypassReserve ? "Yes" : "No"}`, onClick: () => promptQuickCraft(itemName, !bypassReserve, false) },
+      { text: "Select the item to craft", label: true }
+    ];
+    for (const recipe of craftableItems) {
+      const recipeDetails = inventoryCache[itemNameIdMap.get(recipe)];
+      actions.push({
+        text: `${recipe} (inv: ${getFormattedNumber(recipeDetails.count)})`,
+        onClick: () => promptReserveAmount(itemName, getCraftAction(recipe, bypassReserve))
+      });
+    }
+    actions.push({ text: "Cancel", color: "red" });
+    myApp.actions(actions, animate);
+  };
+  const promptQuickUse = (itemName) => {
+    promptReserveAmount(itemName, { action: "use" });
+  };
+  const promptQuickAction = (itemName) => {
+    const possibleActions = [
+      {
+        display: true,
+        text: `Select the quick action for ${itemName}`,
+        label: true
+      },
+      {
+        display: true,
+        text: "Sell",
+        onClick: () => promptQuickSell(itemName)
+      },
+      {
+        display: likedItems[itemName],
+        text: "Send",
+        onClick: () => promptQuickSend(itemName)
+      },
+      {
+        display: isCraftable(itemName),
+        text: "Craft",
+        onClick: () => promptQuickCraft(itemName)
+      },
+      {
+        display: staminaItems.includes(itemName),
+        text: "Use",
+        onClick: () => promptQuickUse(itemName)
+      },
+      {
+        display: true,
+        text: "Cancel",
+        color: "red"
+      }
+    ];
+    const displayedActions = possibleActions.filter((action) => action.display);
+    myApp.actions(displayedActions);
+  };
   const getSellUrlParams = (itemId, itemName, count) => {
     switch (itemName) {
       case "Steak":
@@ -600,19 +870,6 @@
       }
       cleanup();
     });
-  };
-  let townsfolk = GM_getValue(STORAGE_KEYS.TOWNSFOLK, {});
-  const setTownsfolk = (newTownsfolk) => townsfolk = newTownsfolk;
-  const parseQuickSend = (panelRows) => {
-    const quickGiveRow = panelRows.find((row) => row.innerHTML.includes("npclevels.php"));
-    if (!quickGiveRow) return;
-    const updatedTownsfolk = {};
-    const options = quickGiveRow.querySelector(".quickgivedd").options;
-    Array.from(options).slice(1).forEach((opt) => {
-      const name = opt.innerText.split("(")[0].trim();
-      updatedTownsfolk[name] = opt.value;
-    });
-    GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
   };
   const handleItemSend$1 = (itemId, count, action, cleanup) => {
     const sendTarget = action.townsfolk;
@@ -656,50 +913,41 @@
     quickActions[itemName] = actionDetails;
     GM_setValue(STORAGE_KEYS.QUICK_ACTIONS, quickActions);
   };
-  const confirmSell = (itemName, count, target, cleanup) => {
-    const confirmationTitle = `Sell ${getFormattedNumber(count)}x ${itemName}?`;
-    const confirmationSubtitle = `Global reserve value of ${getFormattedNumber(getGlobalReserveAmount())} applied`;
-    const callbackAccept = () => {
-      updateQuickAction(itemName, { action: "sell" });
-      handleQuickAction(target);
-    };
-    myApp.confirm(confirmationSubtitle, confirmationTitle, callbackAccept, refreshInventory);
-    return cleanup(false);
-  };
   const handleQuickAction = (target) => {
+    const cleanup = getCleanupCallback(target);
     const itemId = target.dataset.id;
     const itemCount = target.dataset.count;
     const itemName = inventoryCache[itemId].name;
     const isMeal = mealNames.has(itemName);
     if (isMeal) return confirmMealUse(itemId, itemName);
-    const itemAction = quickActions[itemName];
-    const applicableCount = itemCount - ((itemAction == null ? void 0 : itemAction.reserve) ?? getGlobalReserveAmount());
-    const targetStyle = target.firstElementChild.style;
-    const cleanup = getCleanupCallback(target);
-    if (applicableCount <= 0 || (itemAction == null ? void 0 : itemAction.action) === "none") return cleanup(false) && refreshInventory();
-    if (itemAction == null ? void 0 : itemAction.action) {
-      const action = itemAction.action;
-      targetStyle.color = {
-        "send": "cyan",
-        "craft": "skyblue",
-        "sell": "green",
-        "use": "orange"
-      }[action] ?? getDefaultTextColor();
-      if (action === "send") {
-        return handleItemSend$1(itemId, applicableCount, itemAction, cleanup);
-      } else if (action === "craft") {
-        return handleItemCraft$1(itemName, itemAction, cleanup);
-      } else if (action === "use") {
-        return handleItemUse(itemName, applicableCount, cleanup);
-      } else if (action === "sell") {
-        return handleItemSell(itemId, itemName, applicableCount, cleanup);
-      }
-      return;
-    }
     if (unsellableItems.includes(itemName)) {
-      myApp.addNotification({ title: "Cannot sell this item", subtitle: "Please sell it manually" });
+      myApp.addNotification({ title: "Cannot perform quick action", subtitle: "Quick actions cannot be performed on this item" });
+      return cleanup(false);
     }
-    return confirmSell(itemName, applicableCount, target, cleanup);
+    const itemAction = quickActions[itemName];
+    if (!(itemAction == null ? void 0 : itemAction.action) || itemAction.action === "none") {
+      return cleanup(false) && promptQuickAction(itemName);
+    }
+    const applicableCount = itemCount - ((itemAction == null ? void 0 : itemAction.reserve) ?? getGlobalReserveAmount());
+    if (applicableCount <= 0) return cleanup(false) && refreshInventory();
+    const action = itemAction.action;
+    const targetStyle = target.firstElementChild.style;
+    targetStyle.color = {
+      "send": "cyan",
+      "craft": "skyblue",
+      "sell": "green",
+      "use": "orange"
+    }[action] ?? getDefaultTextColor();
+    if (action === "send") {
+      return handleItemSend$1(itemId, applicableCount, itemAction, cleanup);
+    } else if (action === "craft") {
+      return handleItemCraft$1(itemName, itemAction, cleanup);
+    } else if (action === "use") {
+      return handleItemUse(itemName, applicableCount, cleanup);
+    } else if (action === "sell") {
+      return handleItemSell(itemId, itemName, applicableCount, cleanup);
+    }
+    myApp.addNotification({ title: "Invalid quickAction selected", subtitle: `"${action}" is not a valid action. Please go to item page and re-configure` });
   };
   let _settings = GM_getValue(STORAGE_KEYS.SETTINGS, {});
   const settings = new Proxy(_settings, {
@@ -1551,7 +1799,7 @@
   const getTitleRows = (parsedResponse) => Array.from(parsedResponse.querySelectorAll(".content-block-title"));
   const detectSendableItem = (panelRows) => panelRows.some((row) => row.innerHTML.includes("/img/items/icon_mail.png?")) && Object.keys(townsfolk).length !== 0;
   const detectCraftableItem = (titleRows) => titleRows.some((row) => row.innerText.trim().toLowerCase() === "crafting use");
-  const detectUsableItem = (itemName) => mealNames.has(itemName);
+  const detectUsableItem = (itemName) => staminaItems.includes(itemName);
   const detectSellableItem = (panelRows, itemName) => {
     if (unsellableItems.includes(itemName)) return false;
     const hasQuickSell = panelRows.some((row) => row.innerHTML.includes("market.php"));
@@ -2109,6 +2357,28 @@
     urlMatch: [/^quest\.php/],
     passive: true
   };
+  const getQuestId = (questUrl) => {
+    const urlParameters = new URLSearchParams(questUrl.split("?")[1]);
+    return urlParameters.get("id");
+  };
+  const parseQuests = (response) => {
+    const parsedResponse = parseHtml(response);
+    const currentQuests = parsedResponse.querySelectorAll('a.item-link[href^="quest.php"]');
+    const questIds = Array.from(currentQuests).map((quest) => getQuestId(quest.href));
+    const updatedQuests = { ...quests };
+    for (const questId of Object.keys(quests)) {
+      if (!questIds.includes(questId)) {
+        delete updatedQuests[questId];
+      }
+    }
+    GM_setValue(STORAGE_KEYS.QUESTS, updatedQuests);
+  };
+  const questsListener = {
+    name: "Quests",
+    callback: parseQuests,
+    urlMatch: [/^quests\.php/],
+    passive: true
+  };
   const interceptXHR = (handler) => {
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
@@ -2345,28 +2615,6 @@
         if (handler(newVal)) updateHudDisplay(k === STORAGE_KEYS.HUD_STATUS);
       });
     }
-  };
-  const getQuestId = (questUrl) => {
-    const urlParameters = new URLSearchParams(questUrl.split("?")[1]);
-    return urlParameters.get("id");
-  };
-  const parseQuests = (response) => {
-    const parsedResponse = parseHtml(response);
-    const currentQuests = parsedResponse.querySelectorAll('a.item-link[href^="quest.php"]');
-    const questIds = Array.from(currentQuests).map((quest) => getQuestId(quest.href));
-    const updatedQuests = { ...quests };
-    for (const questId of Object.keys(quests)) {
-      if (!questIds.includes(questId)) {
-        delete updatedQuests[questId];
-      }
-    }
-    GM_setValue(STORAGE_KEYS.QUESTS, updatedQuests);
-  };
-  const questsListener = {
-    name: "Quests",
-    callback: parseQuests,
-    urlMatch: [/^quests\.php/],
-    passive: true
   };
   const listeners = [
     workerListener,

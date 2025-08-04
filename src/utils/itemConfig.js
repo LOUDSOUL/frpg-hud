@@ -1,4 +1,4 @@
-import { mealNames, unsellableItems } from "../constants";
+import { staminaItems, unsellableItems } from "../constants";
 import { cloneRowAfter, quickActionChangeHandler } from "./item";
 import { quickActions } from "./quickActions";
 import { parseSupplyPack } from "./supplyPack";
@@ -13,7 +13,7 @@ const detectSendableItem = (panelRows) => panelRows.some(row => row.innerHTML.in
 
 const detectCraftableItem = (titleRows) => titleRows.some(row => row.innerText.trim().toLowerCase() === "crafting use");
 
-const detectUsableItem = (itemName) => mealNames.has(itemName);
+const detectUsableItem = (itemName) => staminaItems.includes(itemName);
 
 const detectSellableItem = (panelRows, itemName) => {
     if (unsellableItems.includes(itemName)) return false;

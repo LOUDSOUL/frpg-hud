@@ -137,3 +137,112 @@ export const farmProductionKeys = {
 export const tenMinuteProductionItems = ["Straw", "Stone", "Sandstone"];
 
 export const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel Wire", "Oak", "Worms", "Gummy Worms", "Mealworms", "Grubs", "Minnows"];
+
+export const townsfolkGifts = {
+    "Baba Gec": {
+        "loves": ["Cabbage Stew", "Peach Juice", "Wooden Button"],
+        "likes": ["Leek", "Onion", "Rope", "Snail"],
+    },
+    "Beatrix": {
+        "loves": ["Black Powder", "Explosive", "Fireworks", "Iced Tea"],
+        "likes": ["Bird Egg", "Carbon Sphere", "Coal", "Hammer", "Hops", "Oak"],
+    },
+    "Borgen": {
+        "loves": ["Cheese", "Gold Catfish", "Wooden Box"],
+        "likes": ["Glass Orb", "Gold Carrot", "Gold Cucumber", "Gold Peas", "Milk", "Slimestone"],
+    },
+    "Buddy": {
+        "loves": ["Pirate Bandana", "Pirate Flag", "Purple Flower", "Valentines Card"],
+        "likes": ["Bone", "Bucket", "Giant Centipede", "Gold Peppers", "Gummy Worms", "Mushroom", "Snail", "Spider"],
+    },
+    "Captain Thomas": {
+        "loves": ["Fishing Net", "Gold Catfish", "Gold Drum", "Gold Trout", "Large Net"],
+        "likes": ["Blue Crab", "Minnows"],
+    },
+    "Cecil": {
+        "loves": ["Grasshopper", "Horned Beetle", "Leather", "MIAB", "Old Boot", "Shiny Beetle", "Yarn"],
+        "likes": ["Aquamarine", "Giant Centipede", "Grapes", "Ladder", "Slimestone", "Snail"],
+    },
+    "Charles": {
+        "loves": ["Apple", "Apple Cider", "Box of Chocolate 01", "Gold Carrot", "Peach", "Valentines Card"],
+        "likes": ["3-leaf Clover", "Carrot", "Grasshopper", "Twine"],
+    },
+    "Cid": {
+        "loves": ["Bomb", "Diamonds", "Explosive", "Mushroom Stew", "Safety Goggles", "Spider"],
+        "likes": ["Black Powder", "Blue Feathers", "Shimmer Stone", "Stone"],
+    },
+    "frank": {
+        "loves": ["Carrot", "Gold Carrot"],
+        "likes": ["Blue Dye", "Blue Feathers", "Bucket", "Caterpillar", "Feathers", "Grasshopper"],
+    },
+    "Gary Bearson V": {
+        "loves": ["Apple Cider", "Gold Trout", "Yarn", "You Rock Card"],
+        "likes": ["Feathers", "Oak", "Trout"],
+    },
+    "Geist": {
+        "loves": ["Gold Catfish", "Goldgill", "Sea Pincher Special", "Shrimp-a-Plenty"],
+        "likes": ["Blue Crab", "Green Chromis", "Stingray", "Yellow Perch"],
+    },
+    "George": {
+        "loves": ["Apple Cider", "Carbon Sphere", "Hide", "Mug of Beer", "Spider"],
+        "likes": ["Arrowhead", "Bird Egg", "Glass Orb", "Hops", "Mushroom Stew", "Orange Juice"],
+    },
+    "Holger": {
+        "loves": ["Gold Trout", "Mug of Beer", "Potato", "Wooden Table"],
+        "likes": ["Apple Cider", "Arrowhead", "Bluegill", "Carp", "Cheese", "Horn", "Largemouth Bass", "Mushroom Stew", "Peach", "Peas", "Trout"],
+    },
+    "Jill": {
+        "loves": ["Leather", "MIAB", "Mushroom Paste", "Peach", "Yellow Perch"],
+        "likes": ["Cheese", "Grapes", "Milk", "Old Boot", "Scrap Metal", "Tomato"],
+    },
+    "Lorn": {
+        "loves": ["Glass Orb", "Gold Peas", "Milk", "Shrimp", "Small Prawn"],
+        "likes": ["3-leaf Clover", "Apple Cider", "Bucket", "Green Parchment", "Iced Tea", "Iron Cup", "Peas", "Purple Parchment"],
+    },
+    "Mariya": {
+        "loves": ["Cat's Meow", "Leather Diary", "Mushroom Stew", "Onion Soup", "Over The Moon", "Quandary Chowder", "Sea Pincher Special", "Shrimp-a-Plenty"],
+        "likes": ["Cucumber", "Eggplant", "Eggs", "Iced Tea", "Milk", "Peach", "Radish"],
+    },
+    "Mummy": {
+        "loves": ["Bone", "Spider", "Valentines Card"],
+        "likes": ["Fish Bones", "Hammer", "Treat Bag 02", "Yarn"],
+    },
+    "Ric Ryph": {
+        "loves": ["5 Gold", "Hammer", "Mushroom Paste", "Shovel"],
+        "likes": ["Arrowhead", "Black Powder", "Bucket", "Carbon Sphere", "Coal", "Green Parchment", "Old Boot", "Unpolished Shimmer Stone"],
+    },
+    "ROOMBA": {
+        "loves": ["Carbon Sphere", "Scrap Metal"],
+        "likes": ["Glass Orb", "Hammer", "Scrap Wire"],
+    },
+    "Rosalie": {
+        "loves": ["Blue Dye", "Box of Chocolate 01", "Gold Carrot", "Green Dye", "Purple Dye", "Red Dye", "Valentines Card"],
+        "likes": ["Apple", "Apple Cider", "Aquamarine", "Carrot", "Caterpillar", "Fireworks", "Iced Tea", "Purple Flower"],
+    },
+    "Star Meerif": {
+        "loves": ["Blue Feathers", "Gold Feather"],
+        "likes": ["Eggs", "Feathers"],
+    },
+    "Thomas": {
+        "loves": ["Fishing Net", "Flier", "Gold Catfish", "Gold Trout", "Goldgill"],
+        "likes": ["Carp", "Drum", "Gummy Worms", "Iced Tea", "Largemouth Bass", "Mealworms", "Minnows"],
+    },
+    "Vincent": {
+        "loves": ["5 Gold", "Apple Cider", "Axe", "Lemonade", "Mushroom Paste", "Onion Soup", "Orange Juice"],
+        "likes": ["Acorn", "Apple", "Cheese", "Hops", "Horn", "Leather Diary", "Shovel", "Wooden Box"],
+    }
+}
+
+// Item Name: {liked: [Townsfolk1, Townsfolk2, ...], loved: [Townsfolk1, Townsfolk2, ...]}
+export const likedItems = {};
+
+for (const [townsfolk, gifts] of Object.entries(townsfolkGifts)) {
+    gifts.loves.forEach(item => {
+        if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
+        likedItems[item].loved.push(townsfolk);
+    });
+    gifts.likes.forEach(item => {
+        if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
+        likedItems[item].liked.push(townsfolk);
+    });
+};
