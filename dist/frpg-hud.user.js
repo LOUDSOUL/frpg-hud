@@ -712,7 +712,7 @@
     const actions = [
       { text: "Item config", label: true },
       { text: `Item: ${itemName}` },
-      { text: `Action: ${capitalizeFirst(quickAction.action)}`, onClick: () => promptQuickAction(itemName, target) }
+      { text: `Action: ${capitalizeFirst(quickAction.action)}`, onClick: () => promptQuickAction(itemName, quickAction, target) }
     ];
     if (quickAction.reserve !== void 0) {
       actions.push({
@@ -724,12 +724,12 @@
       const loved = (_b = (_a2 = likedItems[itemName]) == null ? void 0 : _a2.loved) == null ? void 0 : _b.includes(quickAction.townsfolk);
       const liked = (_d = (_c = likedItems[itemName]) == null ? void 0 : _c.liked) == null ? void 0 : _d.includes(quickAction.townsfolk);
       const townsfolkText = `${quickAction.townsfolk}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
-      actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName, target) });
+      actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName, quickAction, target) });
     } else if (quickAction.action === "craft") {
       const recipeDetails = inventoryCache[itemNameIdMap.get(quickAction.item)];
       actions.push({
         text: `Crafted Item: ${quickAction.item} (${getFormattedNumber(recipeDetails.count)})`,
-        onClick: () => promptQuickCraft(itemName, target, quickAction.bypassReserve)
+        onClick: () => promptQuickCraft(itemName, quickAction, target, quickAction.bypassReserve)
       });
       actions.push({
         text: `Bypass Reserve: ${quickAction.bypassReserve ? "Yes" : "No"}`,
@@ -768,16 +768,24 @@
       { text: `${getFormattedNumber(percent10)} (10%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent10), target) },
       { text: `${getFormattedNumber(percent25)} (25%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent25), target) },
       { text: `${getFormattedNumber(percent50)} (50%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent50), target) },
-      { text: `${getFormattedNumber(percent90)} (90%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent90), target) },
-      { text: "Cancel", color: "red" }
+      { text: `${getFormattedNumber(percent90)} (90%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent90), target) }
     ];
+    if (quickAction.reserve !== void 0) {
+      actions.push({ text: `${getFormattedNumber(quickAction.reserve)} (current)`, onClick: () => confirmQuickAction(itemName, quickAction, target) });
+    }
+    actions.push({ text: "Cancel", color: "red" });
     myApp.actions(actions);
   };
-  const promptQuickSell = (itemName, target) => {
-    promptReserveAmount(itemName, { action: "sell" }, target);
+  const promptQuickSell = (itemName, quickAction, target) => {
+    quickAction.action = "sell";
+    promptReserveAmount(itemName, quickAction, target);
   };
-  const getSendAction = (target) => ({ action: "send", townsfolk: target });
-  const promptQuickSend = (itemName, target, displayAll = false) => {
+  const getSendAction = (quickAction, target) => {
+    quickAction.action = "send";
+    quickAction.townsfolk = target;
+    return quickAction;
+  };
+  const promptQuickSend = (itemName, quickAction, target, displayAll = false) => {
     var _a2, _b, _c, _d;
     if (!likedItems[itemName]) {
       displayAll = true;
@@ -790,10 +798,10 @@
       const liked = (_d = (_c = likedItems[itemName]) == null ? void 0 : _c.liked) == null ? void 0 : _d.includes(npc);
       if (!displayAll && !(liked || loved)) continue;
       const targetText = `${npc}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
-      actions.push({ text: targetText, onClick: () => promptReserveAmount(itemName, getSendAction(npc), target) });
+      actions.push({ text: targetText, onClick: () => promptReserveAmount(itemName, getSendAction(quickAction, npc), target) });
     }
     if (!displayAll) {
-      actions.push({ text: "Show All", onClick: () => promptQuickSend(itemName, target, true) });
+      actions.push({ text: "Show All", onClick: () => promptQuickSend(itemName, quickAction, target, true) });
     }
     actions.push({ text: "Cancel", color: "red" });
     myApp.actions(actions);
@@ -804,8 +812,13 @@
     }
     return false;
   };
-  const getCraftAction = (recipe, bypassReserve) => ({ action: "craft", item: recipe, bypassReserve });
-  const promptQuickCraft = (itemName, target, bypassReserve = false, animate = true) => {
+  const getCraftAction = (quickAction, recipe, bypassReserve) => {
+    quickAction.action = "craft";
+    quickAction.item = recipe;
+    quickAction.bypassReserve = bypassReserve;
+    return quickAction;
+  };
+  const promptQuickCraft = (itemName, quickAction, target, bypassReserve = false, animate = true) => {
     if (!isCraftable(itemName)) {
       const actions2 = [
         { text: "No recipes unlocked for this item yet", label: true },
@@ -820,26 +833,29 @@
     }
     const actions = [
       { text: "Bypass other materials' reserve?", label: true },
-      { text: `Enabled: ${bypassReserve ? "Yes" : "No"}`, onClick: () => promptQuickCraft(itemName, target, !bypassReserve, false) },
+      { text: `Enabled: ${bypassReserve ? "Yes" : "No"}`, onClick: () => promptQuickCraft(itemName, quickAction, target, !bypassReserve, false) },
       { text: "Select the item to craft", label: true }
     ];
     for (const recipe of craftableItems) {
       const recipeDetails = inventoryCache[itemNameIdMap.get(recipe)];
       actions.push({
         text: `${recipe} (inv: ${getFormattedNumber(recipeDetails.count)})`,
-        onClick: () => promptReserveAmount(itemName, getCraftAction(recipe, bypassReserve), target)
+        onClick: () => promptReserveAmount(itemName, getCraftAction(quickAction, recipe, bypassReserve), target)
       });
     }
     actions.push({ text: "Cancel", color: "red" });
     myApp.actions(actions, animate);
   };
-  const promptQuickUse = (itemName, target) => {
-    promptReserveAmount(itemName, { action: "use" }, target);
+  const promptQuickUse = (itemName, quickAction, target) => {
+    quickAction.action = "use";
+    promptReserveAmount(itemName, quickAction, target);
   };
-  const promptNoAction = (itemName, target) => {
-    confirmQuickAction(itemName, { action: "none" }, target);
+  const promptNoAction = (itemName, quickAction, target) => {
+    quickAction.action = "none";
+    confirmQuickAction(itemName, quickAction, target);
   };
-  const promptQuickAction = (itemName, target) => {
+  const promptQuickAction = (itemName, quickAction, target) => {
+    quickAction = { ...quickAction ?? {} };
     const possibleActions = [
       {
         display: true,
@@ -849,27 +865,27 @@
       {
         display: true,
         text: "Sell",
-        onClick: () => promptQuickSell(itemName, target)
+        onClick: () => promptQuickSell(itemName, quickAction, target)
       },
       {
         display: likedItems[itemName],
         text: "Send",
-        onClick: () => promptQuickSend(itemName, target)
+        onClick: () => promptQuickSend(itemName, quickAction, target)
       },
       {
         display: isCraftable(itemName),
         text: "Craft",
-        onClick: () => promptQuickCraft(itemName, target)
+        onClick: () => promptQuickCraft(itemName, quickAction, target)
       },
       {
         display: staminaItems.includes(itemName),
         text: "Use",
-        onClick: () => promptQuickUse(itemName, target)
+        onClick: () => promptQuickUse(itemName, quickAction, target)
       },
       {
         display: true,
         text: "None",
-        onClick: () => promptNoAction(itemName, target)
+        onClick: () => promptNoAction(itemName, quickAction, target)
       },
       {
         display: true,
@@ -962,7 +978,7 @@
       }
     }
     if (!(itemAction == null ? void 0 : itemAction.action) || itemAction.action === "none") {
-      return cleanup(false) && promptQuickAction(itemName, target);
+      return cleanup(false) && promptQuickAction(itemName, itemAction, target);
     }
     const applicableCount = itemCount - ((itemAction == null ? void 0 : itemAction.reserve) ?? getGlobalReserveAmount());
     if (applicableCount <= 0) return cleanup(false) && refreshInventory();

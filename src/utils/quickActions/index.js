@@ -44,7 +44,7 @@ export const handleQuickAction = (target, itemAction = null) => {
     }
 
     if (!itemAction?.action || itemAction.action === "none") {
-        return cleanup(false) && promptQuickAction(itemName, target);
+        return cleanup(false) && promptQuickAction(itemName, itemAction, target);
     }
 
     const applicableCount = itemCount - (itemAction?.reserve ?? getGlobalReserveAmount());

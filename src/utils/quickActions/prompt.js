@@ -11,7 +11,7 @@ export const confirmQuickAction = (itemName, quickAction, target, animate = true
     const actions = [
         { text: "Item config", label: true, },
         { text: `Item: ${itemName}`, },
-        { text: `Action: ${capitalizeFirst(quickAction.action)}`, onClick: () => promptQuickAction(itemName, target), },
+        { text: `Action: ${capitalizeFirst(quickAction.action)}`, onClick: () => promptQuickAction(itemName, quickAction, target), },
     ];
 
     if (quickAction.reserve !== undefined) {
@@ -26,13 +26,13 @@ export const confirmQuickAction = (itemName, quickAction, target, animate = true
         const liked = likedItems[itemName]?.liked?.includes(quickAction.townsfolk);
 
         const townsfolkText = `${quickAction.townsfolk}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
-        actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName, target) });
+        actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName, quickAction, target) });
     } else if (quickAction.action === "craft") {
         const recipeDetails = inventoryCache[itemNameIdMap.get(quickAction.item)];
 
         actions.push({
             text: `Crafted Item: ${quickAction.item} (${getFormattedNumber(recipeDetails.count)})`,
-            onClick: () => promptQuickCraft(itemName, target, quickAction.bypassReserve),
+            onClick: () => promptQuickCraft(itemName, quickAction, target, quickAction.bypassReserve),
         });
         actions.push({
             text: `Bypass Reserve: ${quickAction.bypassReserve ? "Yes" : "No"}`,
@@ -57,6 +57,7 @@ export const confirmQuickAction = (itemName, quickAction, target, animate = true
 
 const setReserve = (quickAction, reserveAmount) => {
     quickAction["reserve"] = reserveAmount;
+
     return quickAction;
 };
 
@@ -77,19 +78,29 @@ const promptReserveAmount = (itemName, quickAction, target) => {
         { text: `${getFormattedNumber(percent25)} (25%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent25), target), },
         { text: `${getFormattedNumber(percent50)} (50%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent50), target), },
         { text: `${getFormattedNumber(percent90)} (90%)`, onClick: () => confirmQuickAction(itemName, setReserve(quickAction, percent90), target), },
-        { text: "Cancel", color: "red", },
     ];
+    if (quickAction.reserve !== undefined) {
+        actions.push({ text: `${getFormattedNumber(quickAction.reserve)} (current)`, onClick: () => confirmQuickAction(itemName, quickAction, target), });
+    }
+    actions.push({ text: "Cancel", color: "red", });
 
     myApp.actions(actions);
 };
 
-const promptQuickSell = (itemName, target) => {
-    promptReserveAmount(itemName, { action: "sell" }, target);
+const promptQuickSell = (itemName, quickAction, target) => {
+    quickAction.action = "sell";
+
+    promptReserveAmount(itemName, quickAction, target);
 };
 
-const getSendAction = (target) => ({ action: "send", townsfolk: target, });
+const getSendAction = (quickAction, target) => {
+    quickAction.action = "send";
+    quickAction.townsfolk = target;
 
-const promptQuickSend = (itemName, target, displayAll = false) => {
+    return quickAction;
+};
+
+const promptQuickSend = (itemName, quickAction, target, displayAll = false) => {
     if (!likedItems[itemName]) {
         displayAll = true;
     }
@@ -105,10 +116,10 @@ const promptQuickSend = (itemName, target, displayAll = false) => {
         if (!displayAll && !(liked || loved)) continue;
 
         const targetText = `${npc}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
-        actions.push({ text: targetText, onClick: () => promptReserveAmount(itemName, getSendAction(npc), target) });
+        actions.push({ text: targetText, onClick: () => promptReserveAmount(itemName, getSendAction(quickAction, npc), target) });
     }
     if (!displayAll) {
-        actions.push({ text: "Show All", onClick: () => promptQuickSend(itemName, target, true) });
+        actions.push({ text: "Show All", onClick: () => promptQuickSend(itemName, quickAction, target, true) });
     }
     actions.push({ text: "Cancel", color: "red", });
 
@@ -123,9 +134,15 @@ const isCraftable = (itemName) => {
     return false;
 };
 
-const getCraftAction = (recipe, bypassReserve) => ({ action: "craft", item: recipe, bypassReserve, });
+const getCraftAction = (quickAction, recipe, bypassReserve) => {
+    quickAction.action = "craft";
+    quickAction.item = recipe;
+    quickAction.bypassReserve = bypassReserve;
 
-const promptQuickCraft = (itemName, target, bypassReserve = false, animate = true) => {
+    return quickAction;
+};
+
+const promptQuickCraft = (itemName, quickAction, target, bypassReserve = false, animate = true) => {
     if (!isCraftable(itemName)) {
         const actions = [
             { text: "No recipes unlocked for this item yet", label: true, },
@@ -142,14 +159,14 @@ const promptQuickCraft = (itemName, target, bypassReserve = false, animate = tru
 
     const actions = [
         { text: "Bypass other materials' reserve?", label: true, },
-        { text: `Enabled: ${bypassReserve ? "Yes" : "No"}`, onClick: () => promptQuickCraft(itemName, target, !bypassReserve, false), },
+        { text: `Enabled: ${bypassReserve ? "Yes" : "No"}`, onClick: () => promptQuickCraft(itemName, quickAction, target, !bypassReserve, false), },
         { text: "Select the item to craft", label: true, },
     ]
     for (const recipe of craftableItems) {
         const recipeDetails = inventoryCache[itemNameIdMap.get(recipe)];
         actions.push({
             text: `${recipe} (inv: ${getFormattedNumber(recipeDetails.count)})`,
-            onClick: () => promptReserveAmount(itemName, getCraftAction(recipe, bypassReserve), target),
+            onClick: () => promptReserveAmount(itemName, getCraftAction(quickAction, recipe, bypassReserve), target),
         });
     }
     actions.push({ text: "Cancel", color: "red", });
@@ -157,15 +174,21 @@ const promptQuickCraft = (itemName, target, bypassReserve = false, animate = tru
     myApp.actions(actions, animate);
 };
 
-const promptQuickUse = (itemName, target) => {
-    promptReserveAmount(itemName, { action: "use" }, target);
+const promptQuickUse = (itemName, quickAction, target) => {
+    quickAction.action = "use";
+
+    promptReserveAmount(itemName, quickAction, target);
 };
 
-const promptNoAction = (itemName, target) => {
-    confirmQuickAction(itemName, { action: "none" }, target);
+const promptNoAction = (itemName, quickAction, target) => {
+    quickAction.action = "none";
+
+    confirmQuickAction(itemName, quickAction, target);
 };
 
-export const promptQuickAction = (itemName, target) => {
+export const promptQuickAction = (itemName, quickAction, target) => {
+    quickAction = { ...(quickAction ?? {}) };
+
     const possibleActions = [
         {
             display: true,
@@ -175,27 +198,27 @@ export const promptQuickAction = (itemName, target) => {
         {
             display: true,
             text: "Sell",
-            onClick: () => promptQuickSell(itemName, target),
+            onClick: () => promptQuickSell(itemName, quickAction, target),
         },
         {
             display: likedItems[itemName],
             text: "Send",
-            onClick: () => promptQuickSend(itemName, target),
+            onClick: () => promptQuickSend(itemName, quickAction, target),
         },
         {
             display: isCraftable(itemName),
             text: "Craft",
-            onClick: () => promptQuickCraft(itemName, target),
+            onClick: () => promptQuickCraft(itemName, quickAction, target),
         },
         {
             display: staminaItems.includes(itemName),
             text: "Use",
-            onClick: () => promptQuickUse(itemName, target),
+            onClick: () => promptQuickUse(itemName, quickAction, target),
         },
         {
             display: true,
             text: "None",
-            onClick: () => promptNoAction(itemName, target),
+            onClick: () => promptNoAction(itemName, quickAction, target),
         },
         {
             display: true,
