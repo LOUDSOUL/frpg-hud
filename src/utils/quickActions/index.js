@@ -19,7 +19,7 @@ export const updateQuickAction = (itemName, actionDetails) => {
     GM_setValue(STORAGE_KEYS.QUICK_ACTIONS, quickActions);
 }
 
-export const handleQuickAction = (target) => {
+export const handleQuickAction = (target, itemAction = null) => {
     const cleanup = getCleanupCallback(target);
 
     const itemId = target.dataset.id;
@@ -34,9 +34,12 @@ export const handleQuickAction = (target) => {
         return cleanup(false);
     };
 
-    const itemAction = quickActions[itemName];
+    if (!itemAction) {
+        itemAction = quickActions[itemName];
+    }
+
     if (!itemAction?.action || itemAction.action === "none") {
-        return cleanup(false) && promptQuickAction(itemName);
+        return cleanup(false) && promptQuickAction(itemName, target);
     }
 
     const applicableCount = itemCount - (itemAction?.reserve ?? getGlobalReserveAmount());

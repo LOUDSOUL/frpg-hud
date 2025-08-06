@@ -46,3 +46,5 @@ export const refreshInventory = () => {
 };
 
 export const getDefaultTextColor = () => darkModeActive ? "white" : "black";
+
+export const capitalizeFirst = (text) => text[0].toUpperCase() + text.slice(1);

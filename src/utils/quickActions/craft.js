@@ -7,9 +7,8 @@ import { recipes } from "../workshop";
 import { cancelHudRemoval } from "./cleanup";
 
 
-const getApplicableInventory = (recipeDetails, triggerItem) => {
+const getApplicableInventory = (recipeDetails, triggerItem, bypassReserve) => {
     const applicableInventory = {};
-    const bypassReserve = quickActions[triggerItem].bypassReserve ?? false;
     const globalReserve = getGlobalReserveAmount();
 
     for (const materialName of Object.keys(recipeDetails)) {
@@ -53,7 +52,7 @@ export const handleItemCraft = (itemName, action, cleanup) => {
 
     cancelHudRemoval(itemNameIdMap.get(targetItemName));
 
-    const applicableInventory = getApplicableInventory(recipe, itemName);
+    const applicableInventory = getApplicableInventory(recipe, itemName, action.bypassReserve ?? false);
     const maxCraftable = getMaxCraftable(recipe, applicableInventory);
     const craftCount = Math.min(maxCraftable, inventoryLeft);
 
