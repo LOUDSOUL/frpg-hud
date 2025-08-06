@@ -957,7 +957,7 @@
     }
     if (!itemAction) {
       itemAction = quickActions[itemName];
-      if (editMode) {
+      if (editMode && (itemAction == null ? void 0 : itemAction.action)) {
         return cleanup(false) && confirmQuickAction(itemName, itemAction, target);
       }
     }

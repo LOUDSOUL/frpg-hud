@@ -38,7 +38,7 @@ export const handleQuickAction = (target, itemAction = null) => {
     if (!itemAction) {
         itemAction = quickActions[itemName];
 
-        if (editMode) {
+        if (editMode && itemAction?.action) {
             return cleanup(false) && confirmQuickAction(itemName, itemAction, target);
         }
     }
