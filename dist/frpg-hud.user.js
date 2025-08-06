@@ -499,8 +499,13 @@
     hudHtml += "</table>";
     return hudHtml;
   };
+  const exitEditMode = () => {
+    setEditMode(false);
+    updateHudDisplay(true);
+  };
   unsafeWindow.refreshInventory = refreshInventory;
   unsafeWindow.restoreHudItems = restoreHudItems;
+  unsafeWindow.exitEditMode = exitEditMode;
   const getHudHtml = () => {
     const hudHasItems = hudItems.length > 0;
     const filteredTimers = Object.fromEntries(
@@ -552,10 +557,15 @@
     hudHtml += hudSegments.join("<hr />");
     const continueButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" href="${hudUrl}">C</a>`;
     const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
+    const exitEditModeButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="exitEditMode()">E</a>`;
+    let buttonToShow;
+    if (editMode) buttonToShow = exitEditModeButton;
+    else if (hudStash !== null && settings.hudStashEnabled) buttonToShow = restoreButton;
+    else buttonToShow = continueButton;
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
                     <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    ${hudStash !== null && settings.hudStashEnabled ? restoreButton : continueButton}
+                    ${buttonToShow}
                 </div>`;
     hudHtml += `</div>`;
     return hudHtml;
@@ -947,6 +957,9 @@
     }
     if (!itemAction) {
       itemAction = quickActions[itemName];
+      if (editMode) {
+        return cleanup(false) && confirmQuickAction(itemName, itemAction, target);
+      }
     }
     if (!(itemAction == null ? void 0 : itemAction.action) || itemAction.action === "none") {
       return cleanup(false) && promptQuickAction(itemName, target);
@@ -983,6 +996,13 @@
     }
   });
   const setSettings = (value) => _settings = value;
+  let editMode = false;
+  const setEditMode = (value) => {
+    editMode = value;
+    if (value) {
+      myApp.addNotification({ title: "Edit mode enabled", subtitle: "Perform quick action on any item to edit its config" });
+    }
+  };
   const toggleSetting = (key) => {
     settings[key] = !(settings[key] ?? defaultSettings[key].default);
     GM_setValue(STORAGE_KEYS.SETTINGS, settings);
@@ -2455,6 +2475,10 @@
       {
         text: "Change script settings",
         onClick: showSettings
+      },
+      {
+        text: `${editMode ? "Disable" : "Enable"} edit mode`,
+        onClick: () => setEditMode(!editMode)
       },
       {
         text: "Select the loadout to activate",

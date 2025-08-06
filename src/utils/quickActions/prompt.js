@@ -7,7 +7,7 @@ import { townsfolk } from "../townsfolk";
 import { recipes } from "../workshop";
 
 
-const confirmQuickAction = (itemName, quickAction, target, animate = true) => {
+export const confirmQuickAction = (itemName, quickAction, target, animate = true) => {
     const actions = [
         { text: "Item config", label: true, },
         { text: `Item: ${itemName}`, },

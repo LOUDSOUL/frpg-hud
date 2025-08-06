@@ -3,7 +3,7 @@ import { craftworks } from "./craftworks";
 import { hudItems, hudStash, hudStatus, setHudItemsByName, toggleHudStatus } from "./hud";
 import { inventoryCache } from "./inventory";
 import { refreshInventory } from "./misc";
-import { showSettings } from "./settings";
+import { editMode, setEditMode, showSettings } from "./settings";
 
 
 const showLoadout = (loadout) => {
@@ -24,6 +24,10 @@ export const showLoadouts = () => {
         {
             text: "Change script settings",
             onClick: showSettings,
+        },
+        {
+            text: `${editMode ? "Disable" : "Enable"} edit mode`,
+            onClick: () => setEditMode(!editMode),
         },
         {
             text: "Select the loadout to activate",

@@ -21,6 +21,15 @@ export const settings = new Proxy(_settings, {
 })
 export const setSettings = (value) => _settings = value;
 
+export let editMode = false;
+export const setEditMode = (value) => {
+    editMode = value;
+
+    if (value) {
+        myApp.addNotification({ title: "Edit mode enabled", subtitle: "Perform quick action on any item to edit its config" });
+    }
+}
+
 /**
  * @param {keyof typeof defaultSettings} key 
  */
@@ -67,7 +76,7 @@ export const showSettings = () => {
         {
             text: "Export QuickActions",
             onClick: exportQuickActions,
-        }, 
+        },
         {
             text: "Import QuickActions",
             onClick: importQuickActions,

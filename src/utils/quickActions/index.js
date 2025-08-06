@@ -1,10 +1,11 @@
 import { mealNames, STORAGE_KEYS, unsellableItems } from "../../constants";
 import { getGlobalReserveAmount, inventoryCache } from "../inventory";
 import { getDefaultTextColor, refreshInventory } from "../misc";
+import { editMode } from "../settings";
 import { getCleanupCallback } from "./cleanup";
 import { handleItemCraft } from "./craft";
 import { confirmMealUse } from "./meal";
-import { promptQuickAction } from "./prompt";
+import { confirmQuickAction, promptQuickAction } from "./prompt";
 import { handleItemSell } from "./sell";
 import { handleItemSend } from "./send";
 import { handleItemUse } from "./use";
@@ -36,6 +37,10 @@ export const handleQuickAction = (target, itemAction = null) => {
 
     if (!itemAction) {
         itemAction = quickActions[itemName];
+
+        if (editMode) {
+            return cleanup(false) && confirmQuickAction(itemName, itemAction, target);
+        }
     }
 
     if (!itemAction?.action || itemAction.action === "none") {

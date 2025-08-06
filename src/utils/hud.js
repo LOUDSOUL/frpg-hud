@@ -2,7 +2,7 @@ import { darkModeActive, HUD_DISPLAY_MODES, STORAGE_KEYS } from "../constants";
 import { inventoryCache, inventoryLimit, itemNameIdMap } from "./inventory";
 import { debounceHudUpdate, getDefaultTextColor, refreshInventory } from "./misc";
 import { getFormattedNumber } from "./numbers";
-import { settings } from "./settings";
+import { editMode, setEditMode, settings } from "./settings";
 
 
 let statsData = [];
@@ -176,8 +176,14 @@ const getHudTable = (items, perRowItems) => {
     return hudHtml;
 };
 
+const exitEditMode = () => {
+    setEditMode(false);
+    updateHudDisplay(true);
+};
+
 unsafeWindow.refreshInventory = refreshInventory;
 unsafeWindow.restoreHudItems = restoreHudItems;
+unsafeWindow.exitEditMode = exitEditMode;
 
 export const getHudHtml = () => {
     const hudHasItems = hudItems.length > 0;
@@ -238,11 +244,17 @@ export const getHudHtml = () => {
 
     const continueButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" href="${hudUrl}">C</a>`;
     const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
+    const exitEditModeButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="exitEditMode()">E</a>`;
+
+    let buttonToShow;
+    if (editMode) buttonToShow = exitEditModeButton;
+    else if (hudStash !== null && settings.hudStashEnabled) buttonToShow = restoreButton;
+    else buttonToShow = continueButton;
 
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
                     <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    ${hudStash !== null && settings.hudStashEnabled ? restoreButton : continueButton}
+                    ${buttonToShow}
                 </div>`;
 
     hudHtml += `</div>`
