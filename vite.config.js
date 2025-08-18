@@ -1,12 +1,23 @@
 import { defineConfig } from 'vite';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-
+import { execSync } from 'child_process';
 
 const outputFilename = 'frpg-hud.user.js';
 
-const metadataPath = join(__dirname, 'src', 'metadata.js');
-const metadata = readFileSync(metadataPath, 'utf8');
+function generateMetadata() {
+    const metadataPath = join(__dirname, 'src', 'metadata.js');
+    const metadata = readFileSync(metadataPath, 'utf8');
+    
+    if (process.env.GITHUB_ACTIONS) {
+        const commitHash = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+        const commitDate = execSync('git log -1 --format=%cd --date=short', { encoding: 'utf8' }).trim();
+        const version = `${commitDate}-${commitHash}`;
+        return metadata.replace(/(@version\s+)[^\n]+/, `$1${version}`);
+    }
+    
+    return metadata;
+}
 
 export default defineConfig(({ mode }) => ({
     define: {
@@ -40,8 +51,9 @@ export default defineConfig(({ mode }) => ({
 
             const filePath = join(__dirname, 'dist', outputFilename);
             const content = readFileSync(filePath, 'utf8');
+            const dynamicMetadata = generateMetadata();
 
-            writeFileSync(filePath, metadata + '\n\n' + content);
+            writeFileSync(filePath, dynamicMetadata + '\n\n' + content);
         }
     }],
     test: {

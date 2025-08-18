@@ -1,0 +1,40 @@
+name: Build and Update Dist
+
+on:
+  push:
+    branches: [ master, main ]
+    paths: 
+      - 'src/**'
+      - 'vite.config.js'
+      - 'package*.json'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build
+      run: npm run build
+      
+    - name: Commit dist if changed
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if ! git diff --quiet dist/frpg-hud.user.js; then
+          git add dist/frpg-hud.user.js
+          git commit -m "Auto-update dist with version $(git rev-parse --short HEAD)"
+          git push
+        fi
