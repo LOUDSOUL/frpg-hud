@@ -65,4 +65,18 @@ describe("Viewexpedition parsing functionality", () => {
         expect(result).toBe(response);
     });
 
+    it("should handle expedition all item collection", () => {
+        const response = "success";
+        const url = "worker.php?go=collectcharter&id=5243756";
+        const type = "ajax";
+
+        let result;
+        expect(() => {
+            result = responseHandler(response, url, type);
+        }).not.toLogError();
+        // ToDo add found items to inventory (probably should be stored in cache after getting viewcharter)
+
+        expect(result).toBe(response);
+    });
+
 });
