@@ -20,6 +20,7 @@ import wormHabitatListener from "./listeners/hab";
 import questListener from "./listeners/quest";
 import questsListener from "./listeners/quests";
 import viewcharterListener from "./listeners/viewcharter";
+import viewexpeditionListener from "./listeners/viewexpedition";
 
 import { interceptFetch, interceptXHR } from "./utils/interceptors";
 import { setupEventListeners } from "./utils/listeners";
@@ -50,6 +51,7 @@ const listeners = [
     questListener,
     questsListener,
     viewcharterListener,
+    viewexpeditionListener,
 ];
 
 const responseHandler = (response, url, type) => {
