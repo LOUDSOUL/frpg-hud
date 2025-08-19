@@ -152,6 +152,10 @@
     hudStashEnabled: {
       label: "Enable HUD stash (Restore Button)",
       default: true
+    },
+    useNavbarHud: {
+      label: "Use NavBar for HUD",
+      default: false
     }
   };
   const farmProductionKeys = {
@@ -474,9 +478,19 @@
             </span>`;
     }
   };
-  const getHudItemHtml = (item) => {
+  const getHudItemHtml = (item, isNavbarMode = false) => {
     const callback = hudHtmlCallbacks[item.displayMode] ?? hudHtmlCallbacks[HUD_DISPLAY_MODES.INVENTORY];
     const itemContent = callback(item);
+    if (isNavbarMode) {
+      return `<a class="frpg-hud-item" href="item.php?id=${item.id}"
+                data-id="${item.id}" data-count="${item.count}" data-remove="${item.removeOnQuickSell ?? false}"
+                style="position: relative; display: inline-block; margin-right: 5px;">
+                    ${itemContent}
+                    <span class="fill-animation" 
+                    style="position: absolute; left: 0; top: -3px; width: 0; height: 125%; background-color: rgba(255, 0, 0, 0.5); 
+                    z-index: 1; border-radius: 3px;"></span>
+                </a>`;
+    }
     return `<td style="padding: 0px">
                 <a class="frpg-hud-item" href="item.php?id=${item.id}"
                 data-id="${item.id}" data-count="${item.count}" data-remove="${item.removeOnQuickSell ?? false}">
@@ -499,6 +513,9 @@
     hudHtml += "</table>";
     return hudHtml;
   };
+  const getHudFlex = (items) => {
+    return items.map((item) => getHudItemHtml(item, true)).join("");
+  };
   const exitEditMode = () => {
     setEditMode(false);
     updateHudDisplay(true);
@@ -518,18 +535,24 @@
     const itemRows = Math.ceil(hudItems.length / perRowItems);
     const totalRows = timerRows * displayTimers + itemRows + (hudHasItems && displayTimers);
     const hudTranslateY = 50 + 4 * (totalRows - 1);
-    let hudHtml = `<div id="frpg-hud" style="
-            margin: 0;
-            position: absolute;
-            background: ${darkModeActive ? "#111111" : "#ffffff"};
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            border: 1px solid ${darkModeActive ? "#555555" : "#dddddd"};
-            padding: 5px;
-            transform: translateY(-${hudTranslateY}%) translateX(-8px);
-            line-height: 18px;
-            z-index: 99999;
-        ">
+    const hudStyle = settings.useNavbarHud ? `position: absolute;
+         top: 44px;
+         z-index: 999;
+         background: ${darkModeActive ? "#111111" : "#ffffff"};
+         padding: 5px 5px 0px 5px;
+         line-height: 18px;
+         font-size: 11px;` : `margin: 0;
+         position: absolute;
+         background: ${darkModeActive ? "#111111" : "#ffffff"};
+         border-top-left-radius: 10px;
+         border-top-right-radius: 10px;
+         border: 1px solid ${darkModeActive ? "#555555" : "#dddddd"};
+         padding: 5px;
+         transform: translateY(-${hudTranslateY}%) translateX(-8px);
+         line-height: 18px;
+         z-index: 99999;`;
+    let hudHtml = settings.useNavbarHud ? `<div id="frpg-hud-container" style="position: relative; height: 0;">
+            <div id="frpg-hud" style="${hudStyle}">` : `<div id="frpg-hud" style="${hudStyle}">
             ${statsData.join("")}
         <hr>`;
     const hudSegments = [];
@@ -543,13 +566,13 @@
           displayMode: HUD_DISPLAY_MODES.TIMER
         };
       });
-      hudSegments.push(getHudTable(timerItems, perRowItems));
+      hudSegments.push(settings.useNavbarHud ? getHudFlex(timerItems) : getHudTable(timerItems, perRowItems));
     }
     if (hudHasItems) {
       const detailedItems = hudItems.map((item) => {
         return { ...item, ...inventoryCache[item.id] };
       });
-      hudSegments.push(getHudTable(detailedItems, perRowItems));
+      hudSegments.push(settings.useNavbarHud ? getHudFlex(detailedItems) : getHudTable(detailedItems, perRowItems));
     }
     if (!displayTimers && !hudHasItems) {
       hudSegments.push("<span>HUD empty!</span>");
@@ -562,24 +585,43 @@
     if (editMode) buttonToShow = exitEditModeButton;
     else if (hudStash !== null && settings.hudStashEnabled) buttonToShow = restoreButton;
     else buttonToShow = continueButton;
-    hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
+    hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: ${settings.useNavbarHud ? 5 : 15}px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
                     <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
                     ${buttonToShow}
                 </div>`;
-    hudHtml += `</div>`;
+    hudHtml += settings.useNavbarHud ? `</div></div>` : `</div>`;
     return hudHtml;
   };
   const _updateHudDisplay = (forceUpdate = false) => {
     if (document.hidden && !forceUpdate) return;
-    const parentElement = document.querySelector("#statszone");
+    const selector = settings.useNavbarHud ? ".view-main .pages" : "#statszone";
+    const parentElement = document.querySelector(selector);
     if (!parentElement) return;
     if (!hudStatus) {
-      if (forceUpdate) parentElement.innerHTML = statsHtml;
+      if (!settings.useNavbarHud) {
+        if (forceUpdate) parentElement.innerHTML = statsHtml;
+      } else {
+        const existingContainer = document.querySelector("#frpg-hud-container");
+        if (existingContainer) existingContainer.remove();
+      }
       return;
     }
     const hudElement = getHudHtml();
-    parentElement.innerHTML = hudElement;
+    if (settings.useNavbarHud) {
+      const existingContainer = document.querySelector("#frpg-hud-container");
+      if (existingContainer) existingContainer.remove();
+      parentElement.insertAdjacentHTML("beforebegin", hudElement);
+      requestAnimationFrame(() => {
+        const container = document.querySelector("#frpg-hud-container");
+        const hud = document.querySelector("#frpg-hud");
+        if (container && hud && hud.offsetHeight > 0) {
+          container.style.height = hud.offsetHeight + "px";
+        }
+      });
+    } else {
+      parentElement.innerHTML = hudElement;
+    }
   };
   const updateHudDisplay = debounceHudUpdate(_updateHudDisplay, 100);
   const hudRemovalTimeouts = {};
@@ -1737,9 +1779,12 @@
     } else {
       statsDiv.insertAdjacentHTML("beforeEnd", toggleHtml);
     }
+    if (settings.useNavbarHud) {
+      updateHudDisplay(true);
+    }
     setStatsData(Array.from(parsedHud.firstElementChild.children).filter((element) => element.tagName === "SPAN").slice(0, 4).map((i) => i.innerHTML));
     setStatsHtml(parsedHud.innerHTML);
-    if (hudStatus) {
+    if (hudStatus && !settings.useNavbarHud) {
       return getHudHtml();
     }
     return parsedHud.innerHTML;

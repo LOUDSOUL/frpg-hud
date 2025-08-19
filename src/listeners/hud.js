@@ -1,5 +1,6 @@
-import { getHudHtml, hudStatus, setStatsData, setStatsHtml } from "../utils/hud";
+import { getHudHtml, hudStatus, setStatsData, setStatsHtml, updateHudDisplay } from "../utils/hud";
 import { parseHtml } from "../utils/misc";
+import { settings } from "../utils/settings";
 
 
 const explorationHud = (response) => {
@@ -12,12 +13,16 @@ const explorationHud = (response) => {
         hrElement.insertAdjacentHTML("beforeBegin", toggleHtml);
     } else {
         statsDiv.insertAdjacentHTML("beforeEnd", toggleHtml);
-    };
+    }
+
+    if (settings.useNavbarHud) {
+        updateHudDisplay(true);
+    }
 
     setStatsData(Array.from(parsedHud.firstElementChild.children).filter(element => element.tagName === "SPAN").slice(0, 4).map(i => i.innerHTML));
     setStatsHtml(parsedHud.innerHTML);
 
-    if (hudStatus) {
+    if (hudStatus && !settings.useNavbarHud) {
         return getHudHtml();
     }
 
