@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
     PRODUCTION_LAST_UPDATE: "frpg.production-last-update",
     PRODUCTION_LOCK: "frpg.production-lock",
     QUESTS: "frpg.quests",
+    PET_ITEMS_CACHE: "frpg.pet-items-cache",
 };
 
 export const HUD_DISPLAY_MODES = {
