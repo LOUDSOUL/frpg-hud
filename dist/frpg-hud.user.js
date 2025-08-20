@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2025-08-18-05b0978
+// @version      2025-08-20-33d7cdb
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -2411,6 +2411,12 @@
     }
     updateInventory(updateBatch, { isDetailed: true });
     GM_setValue(STORAGE_KEYS.QUESTS, updatedQuests);
+    if (questDetails.reward) {
+      const rewardItems = Object.keys(questDetails.reward).filter((itemName) => itemNameIdMap.has(itemName)).map((itemName) => inventoryCache[itemNameIdMap.get(itemName)]).filter((item) => item);
+      if (rewardItems.length > 0) {
+        setHudDetails(rewardItems, url);
+      }
+    }
   };
   const questListener = {
     name: "Quest",
