@@ -4,6 +4,7 @@ import { STORAGE_KEYS } from "../constants";
 import { parseNumberWithCommas } from "../utils/numbers";
 import { quests } from "../utils/quests";
 import { inventoryCache, itemNameIdMap, updateInventory } from "../utils/inventory";
+import { setHudDetails } from "../utils/hud";
 
 
 const parseQuest = (response, url) => {
@@ -66,6 +67,18 @@ const parseQuest = (response, url) => {
 
     updateInventory(updateBatch, { isDetailed: true, })
     GM_setValue(STORAGE_KEYS.QUESTS, updatedQuests);
+    
+    // Show quest reward items in HUD
+    if (questDetails.reward) {
+        const rewardItems = Object.keys(questDetails.reward)
+            .filter(itemName => itemNameIdMap.has(itemName))
+            .map(itemName => inventoryCache[itemNameIdMap.get(itemName)])
+            .filter(item => item);
+        
+        if (rewardItems.length > 0) {
+            setHudDetails(rewardItems, url);
+        }
+    }
 };
 
 const questListener = {

@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { responseHandler, listeners } from '../../src/main.js';
 import { STORAGE_KEYS } from '../../src/constants.js';
 import { updateInventory } from '../../src/utils/inventory.js';
+import { setHudDetails } from '../../src/utils/hud.js';
 
 listeners.forEach(listener => {
     listener.passive = false;
@@ -18,14 +19,18 @@ vi.mock('../../src/utls/quests.js', () => ({
 vi.mock('../../src/utils/inventory.js', () => ({
     updateInventory: vi.fn(),
     inventoryCache: {
-        '10': { count: 100, name: 'Wood' },
-        '11': { count: 100, name: 'Board' },
+        '454': { id: '454', count: 5, name: '100 Gold', image: 'http://localhost/img/items/goldpouch2.png' },
+        '508': { id: '508', count: 10, name: 'Arnold Palmer', image: 'http://localhost/img/items/ap.png' },
     },
     itemNameIdMap: new Map([
-        ['Wood', '10'],
-        ['Board', '11'],
+        ['100 Gold', '454'],
+        ['Arnold Palmer', '508'],
     ]),
     inventoryLimit: 500
+}));
+
+vi.mock('../../src/utils/hud.js', () => ({
+    setHudDetails: vi.fn(),
 }));
 
 describe("Quest parsing functionality", () => {
@@ -70,6 +75,10 @@ describe("Quest parsing functionality", () => {
                     "Arnold Palmer": 5000,
                 },
             }
-        })
+        });
+        expect(setHudDetails).toHaveBeenCalledWith([
+            { id: '508', count: 10, name: 'Arnold Palmer', image: 'http://localhost/img/items/ap.png' },
+            { id: '454', count: 5, name: '100 Gold', image: 'http://localhost/img/items/goldpouch2.png' }
+        ], url);
     })
 });
