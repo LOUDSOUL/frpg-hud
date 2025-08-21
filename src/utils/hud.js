@@ -196,6 +196,23 @@ const exitEditMode = () => {
     updateHudDisplay(true);
 };
 
+const updateHudCss = (hudHeight) => {
+    const styleId = 'frpg-hud-styles';
+    let styleElement = document.getElementById(styleId);
+    
+    if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        document.head.appendChild(styleElement);
+    }
+    
+    styleElement.textContent = `
+        .pages .page:not([data-page="index-left"]) .page-content {
+            padding-top: ${44 + hudHeight}px !important;
+        }
+    `;
+};
+
 unsafeWindow.refreshInventory = refreshInventory;
 unsafeWindow.restoreHudItems = restoreHudItems;
 unsafeWindow.exitEditMode = exitEditMode;
@@ -236,8 +253,7 @@ export const getHudHtml = () => {
          z-index: 99999;`;
 
     let hudHtml = settings.useNavbarHud ?
-        `<div id="frpg-hud-container" style="position: relative; height: 0;">
-            <div id="frpg-hud" style="${hudStyle}">` :
+        `<div id="frpg-hud" style="${hudStyle}">` :
         `<div id="frpg-hud" style="${hudStyle}">
             ${statsData.join('')}
         <hr>`;
@@ -283,7 +299,7 @@ export const getHudHtml = () => {
                     ${buttonToShow}
                 </div>`;
 
-    hudHtml += settings.useNavbarHud ? `</div></div>` : `</div>`;
+    hudHtml += `</div>`;
 
     return hudHtml;
 }
@@ -299,7 +315,7 @@ const _updateHudDisplay = (forceUpdate = false) => {
         if (!settings.useNavbarHud){
             if (forceUpdate) parentElement.innerHTML = statsHtml;
         } else {
-            const existingContainer = document.querySelector("#frpg-hud-container");
+            const existingContainer = document.querySelector("#frpg-hud");
             if (existingContainer) existingContainer.remove();
         }
         return;
@@ -307,17 +323,16 @@ const _updateHudDisplay = (forceUpdate = false) => {
 
     const hudElement = getHudHtml();
     if (settings.useNavbarHud) {
-        const existingContainer = document.querySelector("#frpg-hud-container");
+        const existingContainer = document.querySelector("#frpg-hud");
         if (existingContainer) existingContainer.remove();
         
         parentElement.insertAdjacentHTML('beforebegin', hudElement);
         
-        // Set container height immediately to prevent flickering
+        // Update CSS with HUD height
         requestAnimationFrame(() => {
-            const container = document.querySelector("#frpg-hud-container");
             const hud = document.querySelector("#frpg-hud");
-            if (container && hud && hud.offsetHeight > 0) {
-                container.style.height = hud.offsetHeight + 'px';
+            if (hud && hud.offsetHeight > 0) {
+                updateHudCss(hud.offsetHeight);
             }
         });
     } else {
