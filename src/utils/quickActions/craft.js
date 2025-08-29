@@ -7,7 +7,7 @@ import { recipes } from "../workshop";
 import { cancelHudRemoval } from "./cleanup";
 
 
-const getApplicableInventory = (recipeDetails, triggerItem, bypassReserve) => {
+const getApplicableInventory = (recipeDetails, triggerItem, applicableCount, bypassReserve) => {
     const applicableInventory = {};
     const globalReserve = getGlobalReserveAmount();
 
@@ -19,7 +19,9 @@ const getApplicableInventory = (recipeDetails, triggerItem, bypassReserve) => {
 
         if (["Iron", "Nails"].includes(materialName)) continue;
 
-        if (materialName === triggerItem || !bypassReserve) {
+        if (materialName === triggerItem) {
+            applicableInventory[materialId].count = applicableCount;
+        } else if (!bypassReserve) {
             applicableInventory[materialId].count = Math.max(0, itemCount - (quickActions[materialName]?.reserve ?? globalReserve));
         }
     }
@@ -27,7 +29,7 @@ const getApplicableInventory = (recipeDetails, triggerItem, bypassReserve) => {
     return applicableInventory;
 }
 
-export const handleItemCraft = (itemName, action, cleanup) => {
+export const handleItemCraft = (itemName, applicableCount, action, cleanup) => {
     const targetItemName = action.item;
 
     if (targetItemName === "Select") {
@@ -52,7 +54,7 @@ export const handleItemCraft = (itemName, action, cleanup) => {
 
     cancelHudRemoval(itemNameIdMap.get(targetItemName));
 
-    const applicableInventory = getApplicableInventory(recipe, itemName, action.bypassReserve ?? false);
+    const applicableInventory = getApplicableInventory(recipe, itemName, applicableCount, action.bypassReserve ?? false);
     const maxCraftable = getMaxCraftable(recipe, applicableInventory);
     const craftCount = Math.min(maxCraftable, inventoryLeft);
 
