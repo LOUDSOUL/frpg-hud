@@ -2,7 +2,7 @@ import { updateInventory } from "../inventory";
 
 
 const handleItemSend = (response, parameters) => {
-    if (response !== "success") return;
+    if (!response.includes("wk__in_mailbox")) return;
 
     const itemId = parameters.get("id");
     const itemCount = parameters.get("qty");
