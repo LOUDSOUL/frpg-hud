@@ -337,18 +337,18 @@ export const getHudHtml = () => {
 
     hudHtml += hudSegments.join("<hr />");
 
-    const continueButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" href="${hudUrl}">C</a>`;
-    const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
-    const exitEditModeButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="exitEditMode()">E</a>`;
+    const continueButton = `<a class="button" style="height: 22px; line-height: 20px; width: 32px; font-size: 11px;" href="${hudUrl}">C</a>`;
+    const restoreButton = `<a class="button" style="height: 22px; line-height: 20px; width: 32px; font-size: 11px;" onclick="restoreHudItems()">R</a>`;
+    const exitEditModeButton = `<a class="button" style="height: 22px; line-height: 20px; width: 32px; font-size: 11px;" onclick="exitEditMode()">E</a>`;
 
     let buttonToShow;
     if (editMode) buttonToShow = exitEditModeButton;
     else if (hudStash !== null && settings.hudStashEnabled) buttonToShow = restoreButton;
     else buttonToShow = continueButton;
 
-    hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: ${settings.useNavbarHud ? 5 : 15}px;">
-                    <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
-                    <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
+    hudHtml += `<div style="display: flex; gap: 2px; margin-top: 5px; margin-bottom: ${settings.useNavbarHud ? 5 : 15}px;">
+                    <a class="button" style="height: 22px; line-height: 20px; flex: 1; font-size: 11px;" onclick="refreshInventory()">Refresh</a>
+                    <a href="explore.php" class="button" style="height: 22px; line-height: 20px; flex: 1; font-size: 11px;">Explore</a>
                     ${buttonToShow}
                 </div>`;
 
