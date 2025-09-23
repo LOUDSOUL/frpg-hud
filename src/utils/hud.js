@@ -357,33 +357,44 @@ export const getHudHtml = () => {
     return hudHtml;
 }
 
+let lastHudMode = null;
+
 const _updateHudDisplay = (forceUpdate = false) => {
     if (document.hidden && !forceUpdate) return;
+
+    if (lastHudMode !== null && lastHudMode !== settings.useNavbarHud) {
+        const existingNavbarHud = document.querySelector("#frpg-hud");
+        if (existingNavbarHud) existingNavbarHud.remove();
+        
+        const statsZone = document.querySelector("#statszone");
+        if (statsZone) statsZone.innerHTML = statsHtml;
+        
+        cleanupHudCss();
+    }
+    lastHudMode = settings.useNavbarHud;
 
     const selector = settings.useNavbarHud ? ".view-main .pages" : "#statszone"
     const parentElement = document.querySelector(selector);
     if (!parentElement) return;
 
     if (!hudStatus) {
-        if (!settings.useNavbarHud){
-            if (forceUpdate) parentElement.innerHTML = statsHtml;
+        if (!settings.useNavbarHud && forceUpdate) {
+            parentElement.innerHTML = statsHtml;
         } else {
             const existingContainer = document.querySelector("#frpg-hud");
             if (existingContainer) existingContainer.remove();
-            // Clean up CSS when HUD is disabled
-            cleanupHudCss();
         }
+        cleanupHudCss();
         return;
     }
 
     const hudElement = getHudHtml();
     if (settings.useNavbarHud) {
         const existingContainer = document.querySelector("#frpg-hud");
-        if (existingContainer) existingContainer.remove();
         
+        if (existingContainer) existingContainer.remove();
         parentElement.insertAdjacentHTML('beforebegin', hudElement);
         
-        // Update CSS with HUD height
         requestAnimationFrame(() => {
             const hud = document.querySelector("#frpg-hud");
             if (hud && hud.offsetHeight > 0) {
@@ -392,6 +403,7 @@ const _updateHudDisplay = (forceUpdate = false) => {
         });
     } else {
         parentElement.innerHTML = hudElement;
+        cleanupHudCss();
     }
 }
 
