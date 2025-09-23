@@ -196,6 +196,9 @@ const exitEditMode = () => {
     updateHudDisplay(true);
 };
 
+let lastTotalPadding = null;
+let lastSearchbarTop = null;
+
 const updateHudCss = (hudHeight) => {
     const styleId = 'frpg-hud-styles';
     let styleElement = document.getElementById(styleId);
@@ -206,11 +209,61 @@ const updateHudCss = (hudHeight) => {
         document.head.appendChild(styleElement);
     }
     
+    if (hudHeight === 0) {
+        // Remove HUD styles when disabled
+        if (lastTotalPadding !== null || lastSearchbarTop !== null) {
+            styleElement.textContent = '';
+            lastTotalPadding = null;
+            lastSearchbarTop = null;
+        }
+        return;
+    }
+    
+    // Calculate base padding by checking existing styles
+    const getBasePadding = () => {
+        // Check the incoming/active page (prioritize page-from-right-to-center, then page-on-center)
+        const activePage = document.querySelector('.view-main .page.page-from-right-to-center') || 
+                          document.querySelector('.view-main .page.page-on-center');
+        const hasSearchbar = activePage?.querySelector('.searchbar') !== null;
+        
+        const baseNavbarHeight = 44;
+        const searchbarHeight = 44;
+        
+        if (hasSearchbar) {
+            return baseNavbarHeight + searchbarHeight; // 88px for pages with searchbar
+        }
+        
+        return baseNavbarHeight; // 44px for regular pages
+    };
+    
+    const basePadding = getBasePadding();
+    const totalPadding = basePadding + hudHeight;
+    const searchbarTop = 44 + hudHeight; // Navbar height + HUD height
+    
+    // Only update if values changed
+    if (totalPadding === lastTotalPadding && searchbarTop === lastSearchbarTop) {
+        return;
+    }
+    
+    lastTotalPadding = totalPadding;
+    lastSearchbarTop = searchbarTop;
+    
     styleElement.textContent = `
         .pages .page:not([data-page="index-left"]) .page-content {
-            padding-top: ${44 + hudHeight}px !important;
+            padding-top: ${totalPadding}px !important;
+        }
+        
+        .navbar-fixed .page > .searchbar,
+        .navbar-through .page > .searchbar,
+        .navbar-fixed > .searchbar,
+        .navbar-through > .searchbar {
+            top: ${searchbarTop}px !important;
         }
     `;
+};
+
+const cleanupHudCss = () => {
+    updateHudCss(0);
 };
 
 unsafeWindow.refreshInventory = refreshInventory;
@@ -317,6 +370,8 @@ const _updateHudDisplay = (forceUpdate = false) => {
         } else {
             const existingContainer = document.querySelector("#frpg-hud");
             if (existingContainer) existingContainer.remove();
+            // Clean up CSS when HUD is disabled
+            cleanupHudCss();
         }
         return;
     }
