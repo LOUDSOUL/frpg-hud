@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2025-08-20-33d7cdb
+// @version      2026-03-03-9805286
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -111,8 +111,10 @@
     // Pea
     "12": "11",
     // Pepper
-    "410": "409"
+    "410": "409",
     // Pine
+    "1307": "1276"
+    // Sugar Cane
   };
   const staminaItems = ["Apple", "Orange Juice"];
   const mealTimeExceptions = {
