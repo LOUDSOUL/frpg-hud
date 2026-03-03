@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-03-ce1180b
+// @version      2026-03-03-41fe8b1
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -268,6 +268,10 @@
     "Vincent": {
       "loves": ["5 Gold", "Apple Cider", "Axe", "Lemonade", "Mushroom Paste", "Onion Soup", "Orange Juice"],
       "likes": ["Acorn", "Apple", "Cheese", "Hops", "Horn", "Leather Diary", "Shovel", "Wooden Box"]
+    },
+    "Goostav": {
+      "loves": ["Slime Egg Shell", "Glowshroom", "Mini Slime Squid", "Gold Slimeback", "Swamp Gourd"],
+      "likes": ["Slimestone", "Essence of Slime", "Frog", "Snail", "Green Butterfly", "Swamp Algae", "Sporefly"]
     }
   };
   const likedItems = {};
