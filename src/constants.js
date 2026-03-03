@@ -59,6 +59,7 @@ export const seedCrop = {
     "28": "27", // Pea
     "12": "11", // Pepper
     "410": "409", // Pine
+    "1307": "1276", // Sugar Cane
 };
 
 export const staminaItems = ["Apple", "Orange Juice"];
