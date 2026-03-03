@@ -38,14 +38,14 @@ const handleExploration = (response, parameters) => {
 
     // #cidercnt is present in regular explores too but always shows 0
     if (ciderUsed || lemonadeUsed) {
-        const itemUsed = ciderUsed ? "Apple Cider" : parsedResponse.querySelector("#lmtyp").innerText.trim();
+        const itemUsed = ciderUsed ? "Apple Cider" : parsedResponse.querySelector("#lmtyp").innerText.split("(")[0].trim();
         const countSelector = ciderUsed ? "#cidercnt" : "#lmcnt";
         updateItemDifference(itemUsed, countSelector);
     }
     updateItemDifference("Apple", "#applecnt");
 
     if (Object.keys(updateBatch).length > 0) {
-        updateInventory(updateBatch, {isAbsolute: false, resolveNames: true, processCraftworks: true});
+        updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
     }
 };
 

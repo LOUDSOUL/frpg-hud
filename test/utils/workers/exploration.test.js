@@ -12,11 +12,13 @@ vi.mock('../../../src/utils/inventory.js', () => ({
   updateInventory: vi.fn(),
   inventoryCache: {
     'apple_id': { count: 0 },
-    'lemonade_id': { count: 5 }
+    'lemonade_id': { count: 5 },
+    'arnold_palmer_id': { count: 10 }
   },
   itemNameIdMap: new Map([
     ['Apple', 'apple_id'],
-    ['Lemonade', 'lemonade_id']
+    ['Lemonade', 'lemonade_id'],
+    ['Arnold Palmer', 'arnold_palmer_id']
   ]),
   inventoryLimit: 200
 }));
@@ -100,6 +102,32 @@ describe('Exploration response handler functionality', () => {
       { isAbsolute: false, resolveNames: true, processCraftworks: true }
     );
   });
+
+  it('should handle multiple ap use with meals', () => {
+    const response = `Arnold Palmer helped you find:<br/><span style='font-size:11px'>(Lemon Seltzer has 46 uses left)</span><br/><span style="font-size:11px;display:inline-block;max-width:275px"><span style="display:inline-block;white-space:nowrap"><img src='/img/items/9383.PNG' alt='Scrap Metal' style='vertical-align:middle; width:18px'> (x619)</span> &nbsp; <span style="display:inline-block;white-space:nowrap"><img src='/img/items/am_t_01.png' alt='Sand' style='vertical-align:middle; width:18px'> (x1572)</span>
+                    <div id="explorepb">0</div>
+                    <div id="explorestam">18,660,697</div>
+                    <div id="applecnt">5</div>
+                    <div id="lmtyp">Arnold Palmer (5x)</div>
+                    <div id="lmtypshort">AP (5x)</div>
+                    <div id="lmcnt">5</div>
+                </span>`;
+    const url = "worker.php?go=drinklm&id=5";
+    const type = "ajax";
+
+    const result = responseHandler(response, url, type);
+
+    expect(result).toBe(response);
+    expect(updateInventory).toHaveBeenCalledWith(
+      {
+        'Apple': 5,
+        'Scrap Metal': 619,
+        'Sand': 1572,
+        'Arnold Palmer': -5,
+      },
+      { isAbsolute: false, resolveNames: true, processCraftworks: true }
+    );
+  })
 
   it("should handle cider use without enough stamina", () => {
     const response = `You need at least <strong>1,950x</strong> stamina to use a cider here.`;
