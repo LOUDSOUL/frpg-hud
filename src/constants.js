@@ -231,6 +231,10 @@ export const townsfolkGifts = {
     "Vincent": {
         "loves": ["5 Gold", "Apple Cider", "Axe", "Lemonade", "Mushroom Paste", "Onion Soup", "Orange Juice"],
         "likes": ["Acorn", "Apple", "Cheese", "Hops", "Horn", "Leather Diary", "Shovel", "Wooden Box"],
+    },
+    "Goostav": {
+        "loves": ["Slime Egg Shell", "Glowshroom", "Mini Slime Squid", "Gold Slimeback", "Swamp Gourd"],
+        "likes": ["Slimestone", "Essence of Slime", "Frog", "Snail", "Green Butterfly", "Swamp Algae", "Sporefly"],
     }
 }
 
