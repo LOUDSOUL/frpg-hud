@@ -19,6 +19,7 @@ import troutFarmListener from "./listeners/troutfarm";
 import wormHabitatListener from "./listeners/hab";
 import questListener from "./listeners/quest";
 import questsListener from "./listeners/quests";
+import petListener from "./listeners/pet";
 
 import { interceptFetch, interceptXHR } from "./utils/interceptors";
 import { setupEventListeners } from "./utils/listeners";
@@ -48,6 +49,7 @@ const listeners = [
     wormHabitatListener,
     questListener,
     questsListener,
+    petListener,
 ];
 
 const responseHandler = (response, url, type) => {
