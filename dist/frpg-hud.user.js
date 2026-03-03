@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-03-4cac1da
+// @version      2026-03-03-ce1180b
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -603,7 +603,7 @@
       return true;
     };
   };
-  const getApplicableInventory = (recipeDetails, triggerItem, bypassReserve) => {
+  const getApplicableInventory = (recipeDetails, triggerItem, applicableCount, bypassReserve) => {
     var _a2;
     const applicableInventory = {};
     const globalReserve = getGlobalReserveAmount();
@@ -612,13 +612,15 @@
       const itemCount = inventoryCache[materialId].count;
       applicableInventory[materialId] = { count: itemCount };
       if (["Iron", "Nails"].includes(materialName)) continue;
-      if (materialName === triggerItem || !bypassReserve) {
+      if (materialName === triggerItem) {
+        applicableInventory[materialId].count = applicableCount;
+      } else if (!bypassReserve) {
         applicableInventory[materialId].count = Math.max(0, itemCount - (((_a2 = quickActions[materialName]) == null ? void 0 : _a2.reserve) ?? globalReserve));
       }
     }
     return applicableInventory;
   };
-  const handleItemCraft$1 = (itemName, action, cleanup) => {
+  const handleItemCraft$1 = (itemName, applicableCount, action, cleanup) => {
     const targetItemName = action.item;
     if (targetItemName === "Select") {
       myApp.addNotification({ title: "No item selected to craft!", subtitle: "Please go to item details and select the item to craft into" });
@@ -637,7 +639,7 @@
       return cleanup(false) && refreshInventory();
     }
     cancelHudRemoval(itemNameIdMap.get(targetItemName));
-    const applicableInventory = getApplicableInventory(recipe, itemName, action.bypassReserve ?? false);
+    const applicableInventory = getApplicableInventory(recipe, itemName, applicableCount, action.bypassReserve ?? false);
     const maxCraftable = getMaxCraftable(recipe, applicableInventory);
     const craftCount = Math.min(maxCraftable, inventoryLeft);
     if (craftCount === 0) {
@@ -997,7 +999,7 @@
     if (action === "send") {
       return handleItemSend$1(itemId, applicableCount, itemAction, cleanup);
     } else if (action === "craft") {
-      return handleItemCraft$1(itemName, itemAction, cleanup);
+      return handleItemCraft$1(itemName, applicableCount, itemAction, cleanup);
     } else if (action === "use") {
       return handleItemUse(itemName, applicableCount, cleanup);
     } else if (action === "sell") {
