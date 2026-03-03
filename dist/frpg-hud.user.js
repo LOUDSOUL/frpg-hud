@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-03-9805286
+// @version      2026-03-03-de1ad2b
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -1388,10 +1388,13 @@
     }
   ];
   const handleItemSend = (response, parameters) => {
-    if (response !== "success") return;
+    if (!response.includes("wk__item_max")) return;
+    const html = parseHtml(response);
+    const maxItemCountElement = html.querySelector("#wk__item_max");
+    if (!maxItemCountElement) return;
+    const maxItemCount = parseNumberWithCommas(maxItemCountElement.textContent);
     const itemId = parameters.get("id");
-    const itemCount = parameters.get("qty");
-    updateInventory({ [itemId]: -itemCount }, { isAbsolute: false });
+    updateInventory({ [itemId]: maxItemCount }, { isAbsolute: true });
   };
   const itemSendWorkers = [
     {
