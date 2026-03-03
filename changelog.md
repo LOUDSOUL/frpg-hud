@@ -1,3 +1,23 @@
+# Version 2026-03-03
+- Added a new "Edit Mode" which allows quickly modifying quick action for an item
+    - Accessible by middle clicking "HUD" -> "Enable Edit Mode"
+    - When enabled, tap and hold/middle click an item to edit its action/details
+    - Click the "E" button to exit
+- Improved the UI when performing quick action for the first time on an item 
+- Added tracking for milestone rewards
+- Added tracking for quest requirements/rewards
+- Quest reward items are also added in the HUD when opened
+- Added loved/liked items for Goostav
+- Added Sugar Cane seed (crop count)
+- Added an option to disable the HUD Stash
+- Fixed `Townsfolk does not exist` error in quickAction if you have `Quick Send` perk
+- Fixed items not tracking when using AP with Lemon Cream Pie active
+- Fixed reserve amount sometimes getting ignored while crafting using quickAction
+- Fixed meal timer sometimes not correctly updating
+- Fixed item send tracking
+- Fixed error when encountering Sandwyrm
+
+
 # Version 2025-07-26
 - Added 10 minute/hourly production tracking
 - Added ability to restore original items after activating a loadout
