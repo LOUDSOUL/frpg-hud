@@ -64,7 +64,7 @@ export const handleQuickAction = (target, itemAction = null) => {
     if (action === "send") {
         return handleItemSend(itemId, applicableCount, itemAction, cleanup);
     } else if (action === "craft") {
-        return handleItemCraft(itemName, itemAction, cleanup);
+        return handleItemCraft(itemName, applicableCount, itemAction, cleanup);
     } else if (action === "use") {
         return handleItemUse(itemName, applicableCount, cleanup);
     } else if (action === "sell") {
