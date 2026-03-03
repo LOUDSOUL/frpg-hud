@@ -19,11 +19,6 @@ const parseTownsfolk = (response) => {
         delete updatedTownsfolk["Cpt Thomas"];
     }
 
-    if (Object.keys(updatedTownsfolk).length < 5) {
-        // For items only sendable to specific townsfolk
-        return response;
-    }
-
     GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
     return response;
 };

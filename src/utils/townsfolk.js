@@ -2,7 +2,7 @@ import { STORAGE_KEYS } from "../constants";
 
 
 export let townsfolk = GM_getValue(STORAGE_KEYS.TOWNSFOLK, {});
-export const setTownsfolk = (newTownsfolk) => townsfolk = newTownsfolk; 
+export const setTownsfolk = (newTownsfolk) => townsfolk = newTownsfolk;
 
 export const parseQuickSend = (panelRows) => {
     const quickGiveRow = panelRows.find(row => row.innerHTML.includes("npclevels.php"));
@@ -15,6 +15,11 @@ export const parseQuickSend = (panelRows) => {
         const name = opt.innerText.split("(")[0].trim();
         updatedTownsfolk[name] = opt.value;
     });
+
+    if (Object.keys(updatedTownsfolk).length < 5) {
+        // For items only sendable to specific townsfolk
+        return;
+    }
 
     GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
 };
