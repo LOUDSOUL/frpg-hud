@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-03-08729d7
+// @version      2026-03-03-4cac1da
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -2036,6 +2036,9 @@
     if (!("Captain Thomas" in updatedTownsfolk)) {
       updatedTownsfolk["Captain Thomas"] = updatedTownsfolk["Cpt Thomas"];
       delete updatedTownsfolk["Cpt Thomas"];
+    }
+    if (Object.keys(updatedTownsfolk).length < 5) {
+      return response;
     }
     GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
     return response;
