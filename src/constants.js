@@ -111,6 +111,10 @@ export const defaultSettings = {
         label: "Enable HUD stash (Restore Button)",
         default: true,
     },
+    useNavbarHud: {
+        label: "Use NavBar for HUD",
+        default: false,
+    },
 };
 
 export const farmProductionKeys = {
