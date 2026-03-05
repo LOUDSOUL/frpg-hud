@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
     HUD_URL: "frpg.hud-url",
     HUD_STASH: "frpg.hud-stash",
     HUD_TIMERS: "frpg.hud-timers",
+    HUD_BUTTON: "frpg.hud-button",
     SUPPLY_PACKS: "frpg.supply-packs",
     NEW_ITEM: "frpg.new-item",
     CRAFTWORKS: "frpg.craftworks",

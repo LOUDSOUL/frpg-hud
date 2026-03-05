@@ -1,6 +1,6 @@
 import { STORAGE_KEYS } from "../constants";
 import { setCraftworks } from "./craftworks";
-import { handleHudTimerUpdate, setHudItems, setHudStash, setHudStatus, setHudUrl, updateHudDisplay } from "./hud";
+import { handleHudTimerUpdate, setHudButton, setHudItems, setHudStash, setHudStatus, setHudUrl, updateHudDisplay } from "./hud";
 import { populateItemNameIdMap, setInventory, setInventoryLimit } from "./inventory";
 import { setProduction } from "./production";
 import { setQuests } from "./quests";
@@ -17,6 +17,7 @@ const storageListeners = {
     [STORAGE_KEYS.HUD_TIMERS]: handleHudTimerUpdate,
     [STORAGE_KEYS.HUD_STATUS]: (value) => { setHudStatus(value); return true; },
     [STORAGE_KEYS.HUD_STASH]: (value) => { setHudStash(value); return true; },
+    [STORAGE_KEYS.HUD_BUTTON]: (value) => { setHudButton(value); return true; },
     [STORAGE_KEYS.INVENTORY]: (value) => { setInventory(value); return true; },
     [STORAGE_KEYS.INVENTORY_LIMIT]: (value) => { setInventoryLimit(value); return true; },
     [STORAGE_KEYS.SETTINGS]: (value) => { setSettings(value); return true; },

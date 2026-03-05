@@ -22,6 +22,14 @@ export let hudTimers = GM_getValue(STORAGE_KEYS.HUD_TIMERS, {});
 export let hudStash = GM_getValue(STORAGE_KEYS.HUD_STASH, null);
 export const setHudStash = (value) => hudStash = value;
 
+export let hudButton = GM_getValue(STORAGE_KEYS.HUD_BUTTON, "Explore");
+export const setHudButton = (value) => hudButton = value;
+
+export const toggleHudButton = () => {
+    const newHudButton = hudButton === "Explore" ? "Fish" : "Explore";
+    GM_setValue(STORAGE_KEYS.HUD_BUTTON, newHudButton);
+}
+
 let hudTimerInterval = null;
 
 export const handleHudTimerUpdate = (value) => {
@@ -246,15 +254,18 @@ export const getHudHtml = () => {
     const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
     const exitEditModeButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="exitEditMode()">E</a>`;
 
-    let buttonToShow;
-    if (editMode) buttonToShow = exitEditModeButton;
-    else if (hudStash !== null && settings.hudStashEnabled) buttonToShow = restoreButton;
-    else buttonToShow = continueButton;
+    let miniButton;
+    if (editMode) miniButton = exitEditModeButton;
+    else if (hudStash !== null && settings.hudStashEnabled) miniButton = restoreButton;
+    else miniButton = continueButton;
+
+    let hudButtonText = hudButton === "Explore" ? "Explore" : "Fish";
+    let HudButtonLink = hudButton === "Explore" ? "/explore.php" : "/fish.php";
 
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
-                    <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    ${buttonToShow}
+                    <a id="frpg-hud-button" href="${HudButtonLink}" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">${hudButtonText}</a>
+                    ${miniButton}
                 </div>`;
 
     hudHtml += `</div>`

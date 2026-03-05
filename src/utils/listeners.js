@@ -1,4 +1,4 @@
-import { updateHudDisplay } from "./hud";
+import { toggleHudButton, updateHudDisplay } from "./hud";
 import { showLoadouts } from "./loadouts";
 import { handleQuickAction } from "./quickActions";
 
@@ -7,6 +7,7 @@ const preventDefaultContextMenu = () => {
     document.addEventListener('contextmenu', function (e) {
         if (e.target.id === "frpg-hud-toggle") e.preventDefault();
         if (e.target.closest("a.frpg-hud-item")) e.preventDefault();
+        if (e.target.id === "frpg-hud-button") e.preventDefault();
     }, false);
 };
 
@@ -22,7 +23,15 @@ const setupAuxClickHandler = () => {
         if (event.target.id === "frpg-hud-toggle") {
             event.preventDefault();
             event.stopPropagation();
+
             return showLoadouts();
+        }
+
+        if (event.target.id === "frpg-hud-button") {
+            event.preventDefault();
+            event.stopPropagation();
+
+            return toggleHudButton();
         }
 
         const target = event.target.closest('a.frpg-hud-item');
@@ -48,9 +57,20 @@ const setupTouchHandlers = () => {
     document.body.addEventListener("touchstart", (event) => {
         if (event.target.id === "frpg-hud-toggle") {
             clearTimeout(quickActionTimeout);
+
             quickActionTimeout = setTimeout(() => {
                 showLoadouts();
             }, 500);
+            return;
+        }
+
+        if (event.target.id === "frpg-hud-button") {
+            clearTimeout(quickActionTimeout);
+
+            quickActionTimeout = setTimeout(() => {
+                toggleHudButton();
+            }, 500);
+            return;
         }
 
         const target = event.target.closest('a.frpg-hud-item');
