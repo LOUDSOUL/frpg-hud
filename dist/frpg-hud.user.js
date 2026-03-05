@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-03-e1c2b54
+// @version      2026-03-05-619c22d
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -36,6 +36,7 @@
     HUD_URL: "frpg.hud-url",
     HUD_STASH: "frpg.hud-stash",
     HUD_TIMERS: "frpg.hud-timers",
+    HUD_BUTTON: "frpg.hud-button",
     SUPPLY_PACKS: "frpg.supply-packs",
     NEW_ITEM: "frpg.new-item",
     CRAFTWORKS: "frpg.craftworks",
@@ -384,6 +385,12 @@
   let hudTimers = GM_getValue(STORAGE_KEYS.HUD_TIMERS, {});
   let hudStash = GM_getValue(STORAGE_KEYS.HUD_STASH, null);
   const setHudStash = (value) => hudStash = value;
+  let hudButton = GM_getValue(STORAGE_KEYS.HUD_BUTTON, "Explore");
+  const setHudButton = (value) => hudButton = value;
+  const toggleHudButton = () => {
+    const newHudButton = hudButton === "Explore" ? "Fish" : "Explore";
+    GM_setValue(STORAGE_KEYS.HUD_BUTTON, newHudButton);
+  };
   let hudTimerInterval = null;
   const handleHudTimerUpdate = (value) => {
     hudTimers = value;
@@ -566,14 +573,16 @@
     const continueButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" href="${hudUrl}">C</a>`;
     const restoreButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="restoreHudItems()">R</a>`;
     const exitEditModeButton = `<a class="button" style="margin-left: 2%; height: 22px; line-height: 20px; white-space: nowrap;" onclick="exitEditMode()">E</a>`;
-    let buttonToShow;
-    if (editMode) buttonToShow = exitEditModeButton;
-    else if (hudStash !== null && settings.hudStashEnabled) buttonToShow = restoreButton;
-    else buttonToShow = continueButton;
+    let miniButton;
+    if (editMode) miniButton = exitEditModeButton;
+    else if (hudStash !== null && settings.hudStashEnabled) miniButton = restoreButton;
+    else miniButton = continueButton;
+    let hudButtonText = hudButton === "Explore" ? "Explore" : "Fish";
+    let HudButtonLink = hudButton === "Explore" ? "/explore.php" : "/fish.php";
     hudHtml += `<div style="display: flex; margin-top: 5px; margin-bottom: 15px;">
                     <a class="button" style="height: 22px; line-height: 20px; width: 42%;" onclick="refreshInventory()">Refresh</a>
-                    <a href="explore.php" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">Explore</a>
-                    ${buttonToShow}
+                    <a id="frpg-hud-button" href="${HudButtonLink}" class="button" style="margin-left: 2%; height: 22px; line-height: 20px; width: 42%;">${hudButtonText}</a>
+                    ${miniButton}
                 </div>`;
     hudHtml += `</div>`;
     return hudHtml;
@@ -2544,6 +2553,7 @@
     document.addEventListener("contextmenu", function(e) {
       if (e.target.id === "frpg-hud-toggle") e.preventDefault();
       if (e.target.closest("a.frpg-hud-item")) e.preventDefault();
+      if (e.target.id === "frpg-hud-button") e.preventDefault();
     }, false);
   };
   const setupDOMContentLoadedHandlers = () => {
@@ -2558,6 +2568,11 @@
         event.preventDefault();
         event.stopPropagation();
         return showLoadouts();
+      }
+      if (event.target.id === "frpg-hud-button") {
+        event.preventDefault();
+        event.stopPropagation();
+        return toggleHudButton();
       }
       const target = event.target.closest("a.frpg-hud-item");
       if (!target) return;
@@ -2581,6 +2596,14 @@
         quickActionTimeout = setTimeout(() => {
           showLoadouts();
         }, 500);
+        return;
+      }
+      if (event.target.id === "frpg-hud-button") {
+        clearTimeout(quickActionTimeout);
+        quickActionTimeout = setTimeout(() => {
+          toggleHudButton();
+        }, 500);
+        return;
       }
       const target = event.target.closest("a.frpg-hud-item");
       if (!target) return;
@@ -2643,6 +2666,10 @@
     },
     [STORAGE_KEYS.HUD_STASH]: (value) => {
       setHudStash(value);
+      return true;
+    },
+    [STORAGE_KEYS.HUD_BUTTON]: (value) => {
+      setHudButton(value);
       return true;
     },
     [STORAGE_KEYS.INVENTORY]: (value) => {
