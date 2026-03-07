@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-07-9c34cb9
+// @version      2026-03-07-78064ef
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -157,6 +157,10 @@
     },
     hudStashEnabled: {
       label: "Enable HUD stash (Restore Button)",
+      default: true
+    },
+    craftworksNotifications: {
+      label: "Notify on full craftworks inventory",
       default: true
     }
   };
@@ -326,6 +330,9 @@
   };
   const getDefaultTextColor = () => darkModeActive ? "white" : "black";
   const capitalizeFirst = (text) => text[0].toUpperCase() + text.slice(1);
+  const notify = (title, subtitle) => {
+    myApp.addNotification({ title, subtitle });
+  };
   const getMaterialsDelta = (recipe, amountConsumed) => {
     const delta = {};
     for (const [materialName, requiredPerCraft] of Object.entries(recipe)) {
@@ -352,6 +359,7 @@
   let recipes = GM_getValue(STORAGE_KEYS.RECIPES, {});
   const setRecipes = (newRecipes) => recipes = newRecipes;
   const craftworksDependencies = /* @__PURE__ */ new Set();
+  const craftworksIngredients = /* @__PURE__ */ new Set();
   let craftworks = GM_getValue(STORAGE_KEYS.CRAFTWORKS, []);
   const setCraftworks = (value) => {
     craftworks = value;
@@ -359,13 +367,21 @@
   };
   const generateDependencies = () => {
     craftworksDependencies.clear();
-    for (const { item, enabled } of craftworks) {
-      if (!enabled) continue;
-      craftworksDependencies.add(item);
-      const itemName = inventoryCache[item].name;
+    craftworksIngredients.clear();
+    const enabledItems = new Set(craftworks.filter((entry) => entry.enabled).map((entry) => entry.item));
+    for (const itemId of enabledItems) {
+      craftworksDependencies.add(itemId);
+      const itemName = inventoryCache[itemId].name;
       const recipe = recipes[itemName];
       if (!recipe) continue;
-      Object.keys(recipe).forEach((materialName) => craftworksDependencies.add(itemNameIdMap.get(materialName)));
+      for (const materialName of Object.keys(recipe)) {
+        const materialId = itemNameIdMap.get(materialName);
+        if (!materialId) continue;
+        craftworksDependencies.add(materialId);
+        if (enabledItems.has(materialId)) {
+          craftworksIngredients.add(materialId);
+        }
+      }
     }
   };
   const numberFormatter = Intl.NumberFormat("en-GB");
@@ -1175,7 +1191,18 @@
     return newItem;
   };
   generateDependencies();
-  const simulateCraftworks = (inventory) => {
+  const simulateCraftworks = (inventory, craftedItem) => {
+    const usedIngredients = new Set(craftworksIngredients);
+    if (craftedItem) {
+      const recipe = recipes[inventoryCache[craftedItem].name];
+      if (recipe) {
+        Object.keys(recipe).forEach((materialName) => {
+          const materialId = itemNameIdMap.get(materialName);
+          if (materialId) usedIngredients.add(materialId);
+        });
+      }
+    }
+    const maxedItems = [];
     for (const { item: recipeId, enabled } of craftworks) {
       if (!enabled) continue;
       const itemDetails = inventory[recipeId];
@@ -1190,9 +1217,19 @@
       const materialsDelta = getMaterialsDelta(recipe, materialsUsed);
       const resolvedDelta = resolveItemNames({ ...materialsDelta, [itemDetails.name]: amountCrafted });
       applyUpdateBatch(inventory, resolvedDelta, { isAbsolute: false, isDetailed: false });
+      if (settings.craftworksNotifications && remainingSlots === amountCrafted && !usedIngredients.has(recipeId)) {
+        maxedItems.push(recipeId);
+      }
+    }
+    if (maxedItems.length > 0) {
+      const notificationText = maxedItems.map((itemId) => {
+        const itemName = inventoryCache[itemId].name;
+        return `<a href="item.php?id=${itemId}">${itemName}</a>`;
+      }).join(", ");
+      notify("Craftworks Inventory Full", `${notificationText} ${maxedItems.length > 1 ? "are" : "is"} no longer being crafted!`);
     }
   };
-  const updateInventory = (updateBatch, { isAbsolute = false, isDetailed = false, resolveNames = false, overwriteMissing = false, processCraftworks = false }) => {
+  const updateInventory = (updateBatch, { isAbsolute = false, isDetailed = false, resolveNames = false, overwriteMissing = false, processCraftworks = false, craftedItem = null }) => {
     const inventory = inventoryCache;
     if (resolveNames) {
       updateBatch = resolveItemNames(updateBatch);
@@ -1207,7 +1244,7 @@
     }
     if (processCraftworks && settings.processCraftworks) {
       const dependencyUpdated = Object.keys(updateBatch).some((itemId) => craftworksDependencies.has(itemId));
-      if (dependencyUpdated) simulateCraftworks(inventory);
+      if (dependencyUpdated) simulateCraftworks(inventory, craftedItem);
     }
     GM_setValue(STORAGE_KEYS.INVENTORY, inventory);
     if (newItem) {
@@ -1255,7 +1292,7 @@
     const inventoryLeft = inventoryLimit - itemDetails.count;
     const { amountCrafted, materialsUsed } = getCraftResult(inventoryLeft, craftCount, returnRate);
     const materialsDelta = getMaterialsDelta(recipe, materialsUsed);
-    updateInventory({ ...materialsDelta, [itemName]: amountCrafted }, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    updateInventory({ ...materialsDelta, [itemName]: amountCrafted }, { isAbsolute: false, resolveNames: true, processCraftworks: true, craftedItem: itemId });
   };
   const handleCraftworksReorder = (response, parameters) => {
     var _a2;
