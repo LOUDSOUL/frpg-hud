@@ -7,7 +7,7 @@ import { setQuests } from "./quests";
 import { setQuickActions } from "./quickActions";
 import { setSettings } from "./settings";
 import { setSupplyPacks } from "./supplyPack";
-import { setTownsfolk } from "./townsfolk";
+import { setTownsfolk, setTownsfolkGifts } from "./townsfolk";
 import { setRecipes, setReturnRate } from "./workshop";
 
 
@@ -24,6 +24,7 @@ const storageListeners = {
 
     [STORAGE_KEYS.QUICK_ACTIONS]: (value) => { setQuickActions(value); return false; },
     [STORAGE_KEYS.TOWNSFOLK]: (value) => { setTownsfolk(value); return false; },
+    [STORAGE_KEYS.TOWNSFOLK_GIFTS]: (value) => { setTownsfolkGifts(value); return false; },
     [STORAGE_KEYS.RECIPES]: (value) => { setRecipes(value); return false; },
     [STORAGE_KEYS.RETURN_RATE]: (value) => { setReturnRate(value); return false; },
     [STORAGE_KEYS.SUPPLY_PACKS]: (value) => { setSupplyPacks(value); return false; },

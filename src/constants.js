@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
     LOCATION_PREFIX: "frpg.location",
     QUICK_ACTIONS: "frpg.quick-actions",
     TOWNSFOLK: "frpg.townsfolk",
+    TOWNSFOLK_GIFTS: "frpg.townsfolk-gifts",
     HUD_STATUS: "frpg.hud-status",
     HUD_ITEMS: "frpg.hud-items",
     HUD_URL: "frpg.hud-url",
@@ -140,7 +141,7 @@ export const tenMinuteProductionItems = ["Straw", "Stone", "Sandstone"];
 
 export const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel Wire", "Oak", "Worms", "Gummy Worms", "Mealworms", "Grubs", "Minnows"];
 
-export const townsfolkGifts = {
+export const defaultTownsfolkGifts = {
     "Baba Gec": {
         "loves": ["Cabbage Stew", "Peach Juice", "Wooden Button"],
         "likes": ["Leek", "Onion", "Rope", "Snail"],
@@ -239,16 +240,16 @@ export const townsfolkGifts = {
     }
 }
 
-// Item Name: {liked: [Townsfolk1, Townsfolk2, ...], loved: [Townsfolk1, Townsfolk2, ...]}
-export const likedItems = {};
+// Item Name: {likes: [Townsfolk1, Townsfolk2, ...], loves: [Townsfolk1, Townsfolk2, ...]}
+export const defaultLikedItems = {};
 
-for (const [townsfolk, gifts] of Object.entries(townsfolkGifts)) {
+for (const [townsfolk, gifts] of Object.entries(defaultTownsfolkGifts)) {
     gifts.loves.forEach(item => {
-        if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
-        likedItems[item].loved.push(townsfolk);
+        if (!defaultLikedItems[item]) defaultLikedItems[item] = { likes: [], loves: [] };
+        defaultLikedItems[item].loves.push(townsfolk);
     });
     gifts.likes.forEach(item => {
-        if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
-        likedItems[item].liked.push(townsfolk);
+        if (!defaultLikedItems[item]) defaultLikedItems[item] = { likes: [], loves: [] };
+        defaultLikedItems[item].likes.push(townsfolk);
     });
 };

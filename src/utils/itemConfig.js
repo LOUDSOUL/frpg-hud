@@ -9,7 +9,9 @@ const getPanelRows = (parsedResponse) => Array.from(parsedResponse.querySelector
 
 const getTitleRows = (parsedResponse) => Array.from(parsedResponse.querySelectorAll(".content-block-title"));
 
-const detectSendableItem = (panelRows) => panelRows.some(row => row.innerHTML.includes("/img/items/icon_mail.png?")) && Object.keys(townsfolk).length !== 0;
+const detectSendableItem = (panelRows) => Object.keys(townsfolk).length > 0 && panelRows.some(row =>
+    Array.from(row.querySelectorAll(".item-title")).some(i => i.firstChild.textContent.trim().toLowerCase() === "givable")
+);
 
 const detectCraftableItem = (titleRows) => titleRows.some(row => row.innerText.trim().toLowerCase() === "crafting use");
 

@@ -1,9 +1,9 @@
 import { handleQuickAction, updateQuickAction } from ".";
-import { likedItems, staminaItems } from "../../constants";
+import { staminaItems } from "../../constants";
 import { getGlobalReserveAmount, inventoryCache, inventoryLimit, itemNameIdMap } from "../inventory";
 import { capitalizeFirst } from "../misc";
 import { getFormattedNumber } from "../numbers";
-import { townsfolk } from "../townsfolk";
+import { townsfolk, townsfolkGifts } from "../townsfolk";
 import { recipes } from "../workshop";
 
 
@@ -22,8 +22,8 @@ export const confirmQuickAction = (itemName, quickAction, target, animate = true
     }
 
     if (quickAction.action === "send") {
-        const loved = likedItems[itemName]?.loved?.includes(quickAction.townsfolk);
-        const liked = likedItems[itemName]?.liked?.includes(quickAction.townsfolk);
+        const loved = townsfolkGifts[itemName]?.loves?.includes(quickAction.townsfolk);
+        const liked = townsfolkGifts[itemName]?.likes?.includes(quickAction.townsfolk);
 
         const townsfolkText = `${quickAction.townsfolk}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
         actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName, quickAction, target) });
@@ -101,7 +101,7 @@ const getSendAction = (quickAction, target) => {
 };
 
 const promptQuickSend = (itemName, quickAction, target, displayAll = false) => {
-    if (!likedItems[itemName]) {
+    if (!townsfolkGifts[itemName]) {
         displayAll = true;
     }
 
@@ -110,8 +110,8 @@ const promptQuickSend = (itemName, quickAction, target, displayAll = false) => {
     ];
 
     for (const npc of Object.keys(townsfolk)) {
-        const loved = likedItems[itemName]?.loved?.includes(npc);
-        const liked = likedItems[itemName]?.liked?.includes(npc);
+        const loved = townsfolkGifts[itemName]?.loves?.includes(npc);
+        const liked = townsfolkGifts[itemName]?.likes?.includes(npc);
 
         if (!displayAll && !(liked || loved)) continue;
 
@@ -201,7 +201,7 @@ export const promptQuickAction = (itemName, quickAction, target) => {
             onClick: () => promptQuickSell(itemName, quickAction, target),
         },
         {
-            display: likedItems[itemName],
+            display: townsfolkGifts[itemName],
             text: "Send",
             onClick: () => promptQuickSend(itemName, quickAction, target),
         },

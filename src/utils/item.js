@@ -1,7 +1,7 @@
 import { STORAGE_KEYS } from "../constants";
 import { getGlobalReserveAmount } from "./inventory";
 import { quickActions, updateQuickAction } from "./quickActions";
-import { townsfolk } from "./townsfolk";
+import { townsfolk, townsfolkGifts } from "./townsfolk";
 import { recipes } from "./workshop";
 
 
@@ -63,21 +63,32 @@ export const quickActionChangeHandler = (target, ignoreUpdate = false) => {
 
     if (selectedAction === "send") {
         let selectedTownsfolk = itemAction.townsfolk;
+        const quickGiveSelector = reserveRow.closest("ul")?.querySelector(".quickgivedd");
+
+        const sendableTownsfolk = [];
+        if (quickGiveSelector) {
+            const options = Array.from(quickGiveSelector.options).slice(1);   
+            const optionTownsfolk = options.map(opt => opt.innerText.split("(")[0].trim());
+            sendableTownsfolk.push(...optionTownsfolk); 
+        } else {
+            sendableTownsfolk.push(...(townsfolkGifts[itemName]?.likes ?? []));
+            sendableTownsfolk.push(...(townsfolkGifts[itemName]?.loves ?? []));
+        }
+
         if (!selectedTownsfolk) {
-            const quickGiveSelector = reserveRow.closest("ul")?.querySelector(".quickgivedd");
             const selectedOption = quickGiveSelector?.selectedOptions[0];
 
             if (!selectedOption || selectedOption.innerText.startsWith("-")) {
-                selectedTownsfolk = Object.keys(townsfolk)[0];
+                selectedTownsfolk = sendableTownsfolk[0] ?? Object.keys(townsfolk)[0];
             } else {
                 selectedTownsfolk = selectedOption.innerText.split("(")[0].trim();
             }
         }
 
-        const townsfolkOptions = Object.keys(townsfolk).map(t => `<option value="${t}" ${selectedTownsfolk === t ? "selected" : ""}>${t}</option>`).join("");
+        const townsfolkOptions = sendableTownsfolk.map(t => `<option value="${t}" ${selectedTownsfolk === t ? "selected" : ""}>${t}</option>`).join("");
         const townsfolkSelectHtml = `
-                <select class="inlineinputlg" onchange="${getListenerString("townsfolk", itemName)}">${townsfolkOptions}</select>
-            `;
+            <select class="inlineinputlg" onchange="${getListenerString("townsfolk", itemName)}">${townsfolkOptions}</select>
+        `;
 
         cloneRowAfter(reserveRow, "Target Townsfolk", "Who would like this gift", townsfolkSelectHtml, "/img/items/icon_mail.png?1");
 
@@ -96,7 +107,7 @@ export const quickActionChangeHandler = (target, ignoreUpdate = false) => {
         let selectedRecipe = itemAction.item;
         if (!selectedRecipe && craftableItems.length > 0) selectedRecipe = craftableItems[0];
 
-        const recipeOptions = craftableItems.map(recipe => `<option value="${recipe}" ${recipe === selectedRecipe ? "selected" : ""}>${recipe}</option>"`);
+        const recipeOptions = craftableItems.map(recipe => `<option value="${recipe}" ${recipe === selectedRecipe ? "selected" : ""}>${recipe}</option>`);
         const recipeSelectHtml = `<select class="inlineinputlg" onchange="${getListenerString("item", itemName)}">${recipeOptions}</select>`;
 
         const bypassReserve = itemAction.bypassReserve ?? false;

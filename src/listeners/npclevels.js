@@ -18,6 +18,10 @@ const parseTownsfolk = (response) => {
         updatedTownsfolk["Captain Thomas"] = updatedTownsfolk["Cpt Thomas"]
         delete updatedTownsfolk["Cpt Thomas"];
     }
+    if (("Charles" in updatedTownsfolk)) {
+        updatedTownsfolk["Charles Horsington III"] = updatedTownsfolk["Charles"];
+        delete updatedTownsfolk["Charles"];
+    }
 
     GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
     return response;

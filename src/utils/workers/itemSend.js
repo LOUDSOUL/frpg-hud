@@ -1,6 +1,4 @@
 import { updateInventory } from "../inventory";
-
-
 import { parseHtml } from "../misc";
 import { parseNumberWithCommas } from "../numbers";
 
