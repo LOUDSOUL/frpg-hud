@@ -113,6 +113,10 @@ export const defaultSettings = {
         label: "Enable HUD stash (Restore Button)",
         default: true,
     },
+    craftworksNotifications: {
+        label: "Notify on full craftworks inventory",
+        default: true,
+    },
 };
 
 export const farmProductionKeys = {

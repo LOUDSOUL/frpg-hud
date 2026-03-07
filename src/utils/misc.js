@@ -48,3 +48,7 @@ export const refreshInventory = () => {
 export const getDefaultTextColor = () => darkModeActive ? "white" : "black";
 
 export const capitalizeFirst = (text) => text[0].toUpperCase() + text.slice(1);
+
+export const notify = (title, subtitle) => {
+    myApp.addNotification({ title, subtitle });
+}

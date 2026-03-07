@@ -28,7 +28,7 @@ const handleItemCraft = (response, parameters) => {
     const { amountCrafted, materialsUsed } = getCraftResult(inventoryLeft, craftCount, returnRate);
     const materialsDelta = getMaterialsDelta(recipe, materialsUsed);
 
-    updateInventory({ ...materialsDelta, [itemName]: amountCrafted }, { isAbsolute: false, resolveNames: true, processCraftworks: true });
+    updateInventory({ ...materialsDelta, [itemName]: amountCrafted }, { isAbsolute: false, resolveNames: true, processCraftworks: true, craftedItem: itemId });
 };
 
 const handleCraftworksReorder = (response, parameters) => {

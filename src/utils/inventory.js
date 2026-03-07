@@ -1,6 +1,7 @@
 import { STORAGE_KEYS } from "../constants";
 import { getCraftResult, getMaterialsDelta, getMaxCraftable } from "./crafting";
-import { craftworks, craftworksDependencies, generateDependencies } from "./craftworks";
+import { craftworks, craftworksDependencies, generateDependencies, craftworksIngredients } from "./craftworks";
+import { notify } from "./misc";
 import { settings } from "./settings";
 import { recipes, returnRate } from "./workshop";
 
@@ -62,7 +63,20 @@ const applyUpdateBatch = (inventory, updateBatch, { isAbsolute = false, isDetail
 
 generateDependencies();
 
-const simulateCraftworks = (inventory) => {
+const simulateCraftworks = (inventory, craftedItem) => {
+    const usedIngredients = new Set(craftworksIngredients);
+    if (craftedItem) {
+        const recipe = recipes[inventoryCache[craftedItem].name];
+        if (recipe) {
+            Object.keys(recipe).forEach(materialName => {
+                const materialId = itemNameIdMap.get(materialName);
+                if (materialId) usedIngredients.add(materialId);
+            });
+        }   
+    }
+
+    const maxedItems = [];
+
     for (const { item: recipeId, enabled } of craftworks) {
         if (!enabled) continue;
 
@@ -83,10 +97,23 @@ const simulateCraftworks = (inventory) => {
         const resolvedDelta = resolveItemNames({ ...materialsDelta, [itemDetails.name]: amountCrafted });
 
         applyUpdateBatch(inventory, resolvedDelta, { isAbsolute: false, isDetailed: false });
+
+        if (settings.craftworksNotifications && remainingSlots === amountCrafted && !usedIngredients.has(recipeId)) {
+            maxedItems.push(recipeId);
+        }
+    }
+
+    if (maxedItems.length > 0) {
+        const notificationText = maxedItems.map(itemId => {
+            const itemName = inventoryCache[itemId].name;
+            return `<a href="item.php?id=${itemId}">${itemName}</a>`;
+        }).join(", ");
+
+        notify("Craftworks Inventory Full", `${notificationText} ${maxedItems.length > 1 ? "are" : "is"} no longer being crafted!`);
     }
 };
 
-export const updateInventory = (updateBatch, { isAbsolute = false, isDetailed = false, resolveNames = false, overwriteMissing = false, processCraftworks = false }) => {
+export const updateInventory = (updateBatch, { isAbsolute = false, isDetailed = false, resolveNames = false, overwriteMissing = false, processCraftworks = false, craftedItem = null }) => {
     const inventory = inventoryCache;
 
     if (resolveNames) {
@@ -105,7 +132,7 @@ export const updateInventory = (updateBatch, { isAbsolute = false, isDetailed = 
 
     if (processCraftworks && settings.processCraftworks) {
         const dependencyUpdated = Object.keys(updateBatch).some(itemId => craftworksDependencies.has(itemId));
-        if (dependencyUpdated) simulateCraftworks(inventory);
+        if (dependencyUpdated) simulateCraftworks(inventory, craftedItem);
     }
 
     GM_setValue(STORAGE_KEYS.INVENTORY, inventory);
