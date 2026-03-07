@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-07-78064ef
+// @version      2026-03-07-de561bc
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -2049,6 +2049,39 @@
     var _a2;
     return ((_a2 = parsedHtml.querySelector(".itemimglg")) == null ? void 0 : _a2.src) || null;
   };
+  const parseItemRow = (itemElement) => {
+    const itemId = new URLSearchParams(itemElement.href.split("?")[1]).get("id");
+    const name = itemElement.querySelector(".item-title > strong").innerText;
+    const image = itemElement.querySelector(".item-media > img").src;
+    const count = parseNumberWithCommas(itemElement.querySelector(".item-after").innerText.split("/")[0]);
+    return { id: itemId, name, image, count };
+  };
+  const parseIngredients = (parsedHtml) => {
+    const craftingSections = Array.from(parsedHtml.querySelectorAll(".content-block-title:has(.fa-wrench)"));
+    const ingredientsSection = craftingSections.find((section) => section.innerText.toLowerCase().includes("crafting recipe"));
+    if (!ingredientsSection) return {};
+    const ingredientDetails = ingredientsSection.nextElementSibling.nextElementSibling;
+    const itemList = Array.from(ingredientDetails.querySelectorAll("a.item-link"));
+    const ingredients = {};
+    for (const item of itemList) {
+      const itemData = parseItemRow(item);
+      ingredients[itemData.id] = itemData;
+    }
+    return ingredients;
+  };
+  const parseCrafts = (parsedHtml) => {
+    const craftingSections = Array.from(parsedHtml.querySelectorAll(".content-block-title:has(.fa-wrench)"));
+    const craftsSection = craftingSections.find((section) => section.innerText.toLowerCase().includes("crafting use"));
+    if (!craftsSection) return {};
+    const craftsDetails = craftsSection.nextElementSibling.nextElementSibling;
+    const itemList = Array.from(craftsDetails.querySelectorAll("a.item-link"));
+    const crafts = {};
+    for (const item of itemList) {
+      const itemData = parseItemRow(item);
+      crafts[itemData.id] = itemData;
+    }
+    return crafts;
+  };
   const parseItem = (response, url) => {
     const parsedResponse = parseHtml(response);
     const itemId = extractItemId(url);
@@ -2061,7 +2094,13 @@
       count: itemCount,
       ...itemImage && { image: itemImage }
     };
-    updateInventory({ [itemId]: itemDetails }, { isDetailed: true });
+    const ingredientsInventory = parseIngredients(parsedResponse);
+    const craftsInventory = parseCrafts(parsedResponse);
+    updateInventory({
+      [itemId]: itemDetails,
+      ...ingredientsInventory,
+      ...craftsInventory
+    }, { isDetailed: true });
     displayItemConfig(parsedResponse, itemName, itemId);
     return parsedResponse.innerHTML;
   };
