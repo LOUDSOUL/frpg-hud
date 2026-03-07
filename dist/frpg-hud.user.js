@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-05-619c22d
+// @version      2026-03-07-9c34cb9
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -31,6 +31,7 @@
     LOCATION_PREFIX: "frpg.location",
     QUICK_ACTIONS: "frpg.quick-actions",
     TOWNSFOLK: "frpg.townsfolk",
+    TOWNSFOLK_GIFTS: "frpg.townsfolk-gifts",
     HUD_STATUS: "frpg.hud-status",
     HUD_ITEMS: "frpg.hud-items",
     HUD_URL: "frpg.hud-url",
@@ -177,7 +178,7 @@
   };
   const tenMinuteProductionItems = ["Straw", "Stone", "Sandstone"];
   const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel Wire", "Oak", "Worms", "Gummy Worms", "Mealworms", "Grubs", "Minnows"];
-  const townsfolkGifts = {
+  const defaultTownsfolkGifts = {
     "Baba Gec": {
       "loves": ["Cabbage Stew", "Peach Juice", "Wooden Button"],
       "likes": ["Leek", "Onion", "Rope", "Snail"]
@@ -275,15 +276,15 @@
       "likes": ["Slimestone", "Essence of Slime", "Frog", "Snail", "Green Butterfly", "Swamp Algae", "Sporefly"]
     }
   };
-  const likedItems = {};
-  for (const [townsfolk2, gifts] of Object.entries(townsfolkGifts)) {
+  const defaultLikedItems = {};
+  for (const [townsfolk2, gifts] of Object.entries(defaultTownsfolkGifts)) {
     gifts.loves.forEach((item) => {
-      if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
-      likedItems[item].loved.push(townsfolk2);
+      if (!defaultLikedItems[item]) defaultLikedItems[item] = { likes: [], loves: [] };
+      defaultLikedItems[item].loves.push(townsfolk2);
     });
     gifts.likes.forEach((item) => {
-      if (!likedItems[item]) likedItems[item] = { liked: [], loved: [] };
-      likedItems[item].liked.push(townsfolk2);
+      if (!defaultLikedItems[item]) defaultLikedItems[item] = { likes: [], loves: [] };
+      defaultLikedItems[item].likes.push(townsfolk2);
     });
   }
   const parseHtml = (htmlString) => {
@@ -715,19 +716,60 @@
   };
   let townsfolk = GM_getValue(STORAGE_KEYS.TOWNSFOLK, {});
   const setTownsfolk = (newTownsfolk) => townsfolk = newTownsfolk;
+  let townsfolkGifts = GM_getValue(STORAGE_KEYS.TOWNSFOLK_GIFTS, defaultLikedItems);
+  const setTownsfolkGifts = (newTownsfolkGifts) => townsfolkGifts = newTownsfolkGifts;
+  const addTownsfolkGifts = (townsfolkName, items) => {
+    var _a2;
+    let newFound = false;
+    for (const [itemId, status] of Object.entries(items)) {
+      const statusKey = {
+        like: "likes",
+        likes: "likes",
+        liked: "likes",
+        love: "loves",
+        loves: "loves",
+        loved: "loves"
+      }[status];
+      if (!statusKey) continue;
+      const itemName = (_a2 = inventoryCache[itemId]) == null ? void 0 : _a2.name;
+      if (!itemName) continue;
+      if (!townsfolkGifts[itemName]) {
+        townsfolkGifts[itemName] = {
+          likes: [],
+          loves: []
+        };
+      }
+      if (!townsfolkGifts[itemName][statusKey].includes(townsfolkName)) {
+        townsfolkGifts[itemName][statusKey].push(townsfolkName);
+        newFound = true;
+      }
+    }
+    if (newFound) {
+      GM_setValue(STORAGE_KEYS.TOWNSFOLK_GIFTS, townsfolkGifts);
+    }
+    return newFound;
+  };
   const parseQuickSend = (panelRows) => {
     const quickGiveRow = panelRows.find((row) => row.innerHTML.includes("npclevels.php"));
     if (!quickGiveRow) return;
+    const optionsElement = quickGiveRow.querySelector(".quickgivedd");
+    if (!optionsElement) return;
     const updatedTownsfolk = {};
-    const options = quickGiveRow.querySelector(".quickgivedd").options;
+    const itemId = optionsElement.dataset.id;
+    const options = optionsElement.options;
     Array.from(options).slice(1).forEach((opt) => {
-      const name = opt.innerText.split("(")[0].trim();
-      updatedTownsfolk[name] = opt.value;
+      const split = opt.innerText.split("(");
+      const townsfolkName = split[0].trim();
+      const townsfolkId = opt.value;
+      updatedTownsfolk[townsfolkName] = townsfolkId;
+      if (split.length > 1) {
+        const itemStatus = split[1].replace(")", "").toLowerCase().trim();
+        addTownsfolkGifts(townsfolkName, { [itemId]: itemStatus });
+      }
     });
-    if (Object.keys(updatedTownsfolk).length < 5) {
-      return;
+    if (Object.keys(updatedTownsfolk).length > 5) {
+      GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
     }
-    GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
   };
   const confirmQuickAction = (itemName, quickAction, target, animate = true) => {
     var _a2, _b, _c, _d;
@@ -743,8 +785,8 @@
       });
     }
     if (quickAction.action === "send") {
-      const loved = (_b = (_a2 = likedItems[itemName]) == null ? void 0 : _a2.loved) == null ? void 0 : _b.includes(quickAction.townsfolk);
-      const liked = (_d = (_c = likedItems[itemName]) == null ? void 0 : _c.liked) == null ? void 0 : _d.includes(quickAction.townsfolk);
+      const loved = (_b = (_a2 = townsfolkGifts[itemName]) == null ? void 0 : _a2.loves) == null ? void 0 : _b.includes(quickAction.townsfolk);
+      const liked = (_d = (_c = townsfolkGifts[itemName]) == null ? void 0 : _c.likes) == null ? void 0 : _d.includes(quickAction.townsfolk);
       const townsfolkText = `${quickAction.townsfolk}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
       actions.push({ text: `Townsfolk: ${townsfolkText}`, onClick: () => promptQuickSend(itemName, quickAction, target) });
     } else if (quickAction.action === "craft") {
@@ -809,15 +851,15 @@
   };
   const promptQuickSend = (itemName, quickAction, target, displayAll = false) => {
     var _a2, _b, _c, _d;
-    if (!likedItems[itemName]) {
+    if (!townsfolkGifts[itemName]) {
       displayAll = true;
     }
     const actions = [
       { text: "Select the townsfolk to send the item to: ", label: true }
     ];
     for (const npc of Object.keys(townsfolk)) {
-      const loved = (_b = (_a2 = likedItems[itemName]) == null ? void 0 : _a2.loved) == null ? void 0 : _b.includes(npc);
-      const liked = (_d = (_c = likedItems[itemName]) == null ? void 0 : _c.liked) == null ? void 0 : _d.includes(npc);
+      const loved = (_b = (_a2 = townsfolkGifts[itemName]) == null ? void 0 : _a2.loves) == null ? void 0 : _b.includes(npc);
+      const liked = (_d = (_c = townsfolkGifts[itemName]) == null ? void 0 : _c.likes) == null ? void 0 : _d.includes(npc);
       if (!displayAll && !(liked || loved)) continue;
       const targetText = `${npc}${loved ? " (loves)" : ""}${liked ? " (likes)" : ""}`;
       actions.push({ text: targetText, onClick: () => promptReserveAmount(itemName, getSendAction(quickAction, npc), target) });
@@ -890,7 +932,7 @@
         onClick: () => promptQuickSell(itemName, quickAction, target)
       },
       {
-        display: likedItems[itemName],
+        display: townsfolkGifts[itemName],
         text: "Send",
         onClick: () => promptQuickSend(itemName, quickAction, target)
       },
@@ -1799,7 +1841,7 @@
     }
   };
   const quickActionChangeHandler = (target, ignoreUpdate = false) => {
-    var _a2, _b;
+    var _a2, _b, _c, _d;
     const settingsRow = target.closest("#frpg-quick-action");
     const itemName = settingsRow.dataset.name;
     clearRowsAfter(settingsRow);
@@ -1821,19 +1863,28 @@
     }
     if (selectedAction === "send") {
       let selectedTownsfolk = itemAction.townsfolk;
+      const quickGiveSelector = (_b = reserveRow.closest("ul")) == null ? void 0 : _b.querySelector(".quickgivedd");
+      const sendableTownsfolk = [];
+      if (quickGiveSelector) {
+        const options = Array.from(quickGiveSelector.options).slice(1);
+        const optionTownsfolk = options.map((opt) => opt.innerText.split("(")[0].trim());
+        sendableTownsfolk.push(...optionTownsfolk);
+      } else {
+        sendableTownsfolk.push(...((_c = townsfolkGifts[itemName]) == null ? void 0 : _c.likes) ?? []);
+        sendableTownsfolk.push(...((_d = townsfolkGifts[itemName]) == null ? void 0 : _d.loves) ?? []);
+      }
       if (!selectedTownsfolk) {
-        const quickGiveSelector = (_b = reserveRow.closest("ul")) == null ? void 0 : _b.querySelector(".quickgivedd");
         const selectedOption = quickGiveSelector == null ? void 0 : quickGiveSelector.selectedOptions[0];
         if (!selectedOption || selectedOption.innerText.startsWith("-")) {
-          selectedTownsfolk = Object.keys(townsfolk)[0];
+          selectedTownsfolk = sendableTownsfolk[0] ?? Object.keys(townsfolk)[0];
         } else {
           selectedTownsfolk = selectedOption.innerText.split("(")[0].trim();
         }
       }
-      const townsfolkOptions = Object.keys(townsfolk).map((t) => `<option value="${t}" ${selectedTownsfolk === t ? "selected" : ""}>${t}</option>`).join("");
+      const townsfolkOptions = sendableTownsfolk.map((t) => `<option value="${t}" ${selectedTownsfolk === t ? "selected" : ""}>${t}</option>`).join("");
       const townsfolkSelectHtml = `
-                <select class="inlineinputlg" onchange="${getListenerString("townsfolk", itemName)}">${townsfolkOptions}</select>
-            `;
+            <select class="inlineinputlg" onchange="${getListenerString("townsfolk", itemName)}">${townsfolkOptions}</select>
+        `;
       cloneRowAfter(reserveRow, "Target Townsfolk", "Who would like this gift", townsfolkSelectHtml, "/img/items/icon_mail.png?1");
       if (ignoreUpdate) return;
       if (!selectedTownsfolk) return;
@@ -1846,7 +1897,7 @@
       }
       let selectedRecipe = itemAction.item;
       if (!selectedRecipe && craftableItems.length > 0) selectedRecipe = craftableItems[0];
-      const recipeOptions = craftableItems.map((recipe) => `<option value="${recipe}" ${recipe === selectedRecipe ? "selected" : ""}>${recipe}</option>"`);
+      const recipeOptions = craftableItems.map((recipe) => `<option value="${recipe}" ${recipe === selectedRecipe ? "selected" : ""}>${recipe}</option>`);
       const recipeSelectHtml = `<select class="inlineinputlg" onchange="${getListenerString("item", itemName)}">${recipeOptions}</select>`;
       const bypassReserve = itemAction.bypassReserve ?? false;
       const bypassSelectHtml = `
@@ -1881,7 +1932,9 @@
   };
   const getPanelRows = (parsedResponse) => Array.from(parsedResponse.querySelectorAll(".list-block > ul > li.close-panel"));
   const getTitleRows = (parsedResponse) => Array.from(parsedResponse.querySelectorAll(".content-block-title"));
-  const detectSendableItem = (panelRows) => panelRows.some((row) => row.innerHTML.includes("/img/items/icon_mail.png?")) && Object.keys(townsfolk).length !== 0;
+  const detectSendableItem = (panelRows) => Object.keys(townsfolk).length > 0 && panelRows.some(
+    (row) => Array.from(row.querySelectorAll(".item-title")).some((i) => i.firstChild.textContent.trim().toLowerCase() === "givable")
+  );
   const detectCraftableItem = (titleRows) => titleRows.some((row) => row.innerText.trim().toLowerCase() === "crafting use");
   const detectUsableItem = (itemName) => staminaItems.includes(itemName);
   const detectSellableItem = (panelRows, itemName) => {
@@ -2054,6 +2107,10 @@
     if (!("Captain Thomas" in updatedTownsfolk)) {
       updatedTownsfolk["Captain Thomas"] = updatedTownsfolk["Cpt Thomas"];
       delete updatedTownsfolk["Cpt Thomas"];
+    }
+    if ("Charles" in updatedTownsfolk) {
+      updatedTownsfolk["Charles Horsington III"] = updatedTownsfolk["Charles"];
+      delete updatedTownsfolk["Charles"];
     }
     GM_setValue(STORAGE_KEYS.TOWNSFOLK, updatedTownsfolk);
     return response;
@@ -2469,6 +2526,56 @@
     urlMatch: [/^quests\.php/],
     passive: true
   };
+  const parseMailbox = (response, url) => {
+    var _a2;
+    const parsedResponse = parseHtml(response);
+    const mailboxBlock = parsedResponse.querySelector(".mailboxcb");
+    if (!mailboxBlock) return response;
+    const mailItems = mailboxBlock.querySelectorAll(".list-block .item-content");
+    const updatedInventory = {};
+    for (const item of mailItems) {
+      const link = item.querySelector('a[href^="item.php"]');
+      if (!link) continue;
+      const itemId = new URLSearchParams(link.href.split("?")[1]).get("id");
+      const count = item.querySelector("input.qty").dataset.numLeft;
+      updatedInventory[itemId] = count;
+    }
+    updateInventory(updatedInventory, { isDetailed: false, isAbsolute: true });
+    const playerId = new URLSearchParams(url.split("?")[1]).get("id");
+    const townsfolkName = Object.keys(townsfolk).find((name) => townsfolk[name] === playerId);
+    if (!townsfolkName) return response;
+    const sectionTitles = mailboxBlock.querySelectorAll(".content-block-title");
+    const sections = Array.from(sectionTitles);
+    if (sections.some((section) => section.textContent.toLowerCase().includes("discovered"))) {
+      const discoveredSection = sections.find((section) => section.textContent.toLowerCase().includes("discovered"));
+      if (!discoveredSection) return response;
+      const discoveredGifts = {};
+      const discoveredItems = discoveredSection.nextElementSibling.querySelectorAll(".item-content");
+      for (const item of discoveredItems) {
+        const link = item.querySelector('a[href^="item.php"]');
+        if (!link) continue;
+        const itemId = new URLSearchParams(link.href.split("?")[1]).get("id");
+        let statusImage = (_a2 = item.querySelector(".item-title > strong > img")) == null ? void 0 : _a2.src;
+        if (!statusImage) continue;
+        let status = null;
+        if (statusImage.includes("love")) {
+          status = "love";
+        } else if (statusImage.includes("like")) {
+          status = "like";
+        }
+        if (!status) continue;
+        discoveredGifts[itemId] = status;
+      }
+      addTownsfolkGifts(townsfolkName, discoveredGifts);
+    }
+    return response;
+  };
+  const mailboxListener = {
+    name: "Mailbox",
+    callback: parseMailbox,
+    urlMatch: [/^mailbox\.php/],
+    passive: true
+  };
   const interceptXHR = (handler) => {
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
@@ -2692,6 +2799,10 @@
       setTownsfolk(value);
       return false;
     },
+    [STORAGE_KEYS.TOWNSFOLK_GIFTS]: (value) => {
+      setTownsfolkGifts(value);
+      return false;
+    },
     [STORAGE_KEYS.RECIPES]: (value) => {
       setRecipes(value);
       return false;
@@ -2749,7 +2860,8 @@
     troutFarmListener,
     wormHabitatListener,
     questListener,
-    questsListener
+    questsListener,
+    mailboxListener
   ];
   const responseHandler = (response, url, type) => {
     for (const listener of listeners) {
