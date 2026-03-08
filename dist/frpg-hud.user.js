@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-07-de561bc
+// @version      2026-03-08-dd0e05d
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -1331,7 +1331,7 @@
       const itemName = itemImage.alt.trim();
       if (!itemName) continue;
       let itemCount = updateBatch[itemName] ?? 0;
-      if (itemImage.style.filter.includes("grayscale")) {
+      if (itemImage.style.filter.includes("grayscale") || itemImage.classList.contains("ifs")) {
         itemCount = inventoryLimit;
       } else if (itemImage.nextSibling && (ciderUsed || lemonadeUsed)) {
         itemCount += parseNumberWithCommas(itemImage.nextSibling.textContent.trim().split("x")[1].slice(0, -1));
