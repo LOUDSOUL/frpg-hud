@@ -18,7 +18,7 @@ const handleExploration = (response, parameters) => {
         if (!itemName) continue;
         let itemCount = updateBatch[itemName] ?? 0;
 
-        if (itemImage.style.filter.includes("grayscale")) {
+        if (itemImage.style.filter.includes("grayscale") || itemImage.classList.contains("ifs")) {
             itemCount = inventoryLimit;
         } else if (itemImage.nextSibling && (ciderUsed || lemonadeUsed)) {
             itemCount += parseNumberWithCommas(itemImage.nextSibling.textContent.trim().split("x")[1].slice(0, -1));
