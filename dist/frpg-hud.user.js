@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-08-dd0e05d
+// @version      2026-04-15-86fe877
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -1366,24 +1366,44 @@
       listener: handleExploration
     }
   ];
+  const processHarvestData = (data) => {
+    if (!data.drops) return;
+    const updatedInventory = {};
+    for (const cropId of Object.keys(data.drops)) {
+      updatedInventory[cropId] = data.drops[cropId].qty;
+    }
+    updateInventory(updatedInventory, { isAbsolute: false });
+  };
   const handleFarmHarvest = (response) => {
     if (response === "") return;
     const parsedResponse = JSON.parse(response);
-    const updatedInventory = {};
-    for (const cropId of Object.keys(parsedResponse.drops)) {
-      updatedInventory[cropId] = parsedResponse.drops[cropId].qty;
-    }
-    updateInventory(updatedInventory, { isAbsolute: false });
+    processHarvestData(parsedResponse);
     try {
-      unsafeWindow.updateCropCount({ target: document.querySelector(".seedid") });
+      const cropSelect = document.querySelector(".seedid");
+      if (cropSelect) {
+        unsafeWindow.updateCropCount({ target: cropSelect });
+      }
     } catch (error) {
       console.log("Error while updating crop counts", error);
     }
   };
+  const handleGrapeJuiceVat = (response) => {
+    if (response === "") return;
+    const parsedResponse = JSON.parse(response);
+    processHarvestData(parsedResponse);
+  };
   const farmWorkers = [
+    {
+      action: "harvest",
+      listener: handleFarmHarvest
+    },
     {
       action: "harvestall",
       listener: handleFarmHarvest
+    },
+    {
+      action: "grapejuicevat",
+      listener: handleGrapeJuiceVat
     }
   ];
   const handleManualFish = (response) => {
