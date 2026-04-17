@@ -1,27 +1,49 @@
 import { getHudHtml, hudStatus, setStatsData, setStatsHtml } from "../utils/hud";
 import { parseHtml } from "../utils/misc";
 
-
-const explorationHud = (response) => {
-    const parsedHud = parseHtml(response);
-    const statsDiv = parsedHud.firstElementChild;
+const addToggleButton = (element) => {
+    const statsDiv = element.firstElementChild;
     const toggleHtml = `<span><a id="frpg-hud-toggle" style="padding: 3px 5px 2px 5px; border: 1px solid; border-radius: 5px;" onclick="toggleHudStatus()" href="#">HUD</span>`;
 
-    const hrElement = statsDiv.querySelector("hr");
+    const hrElement = statsDiv?.querySelector("hr");
     if (hrElement) {
         hrElement.insertAdjacentHTML("beforeBegin", toggleHtml);
     } else {
-        statsDiv.insertAdjacentHTML("beforeEnd", toggleHtml);
+        const spans = element.querySelectorAll("span");
+        if (spans.length > 0) {
+            spans[spans.length - 1].insertAdjacentHTML("afterEnd", toggleHtml);
+            return element;
+        } else {
+            statsDiv.insertAdjacentHTML("beforeEnd", toggleHtml);
+        }
     };
 
-    setStatsData(Array.from(parsedHud.firstElementChild.children).filter(element => element.tagName === "SPAN").slice(0, 4).map(i => i.innerHTML));
-    setStatsHtml(parsedHud.innerHTML);
+    return element;
+}
 
-    if (hudStatus) {
-        return getHudHtml();
+const explorationHud = (response) => {
+    const parsedResponse = JSON.parse(response);
+
+    const mainHtml = parsedResponse.html_main;
+    const trackerHtml = parsedResponse.html_tracker;
+
+    const mainElement = parseHtml(mainHtml);
+    const trackerElement = trackerHtml ? parseHtml(trackerHtml) : trackerHtml;
+
+    addToggleButton(mainElement);
+    if (trackerElement) {
+        addToggleButton(trackerElement);
     }
 
-    return parsedHud.innerHTML;
+    setStatsData(Array.from(mainElement.querySelectorAll("span")).map(i => i.innerHTML));
+    setStatsHtml(trackerElement ? trackerElement.innerHTML : "");
+
+    return JSON.stringify({
+        ...parsedResponse,
+        html_main: mainElement.innerHTML,
+        html_tracker: hudStatus ? getHudHtml() : trackerElement ? trackerElement.innerHTML : trackerElement,
+    });
+
 };
 
 const hudListener = {

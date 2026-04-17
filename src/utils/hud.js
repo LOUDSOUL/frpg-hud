@@ -207,7 +207,7 @@ export const getHudHtml = () => {
     const totalRows = (timerRows * displayTimers) + itemRows + (hudHasItems && displayTimers);
 
     const hudTranslateY = 50 + (4 * (totalRows - 1));
-
+    
     let hudHtml =
         `<div id="frpg-hud" style="
             margin: 0;
@@ -276,7 +276,7 @@ export const getHudHtml = () => {
 const _updateHudDisplay = (forceUpdate = false) => {
     if (document.hidden && !forceUpdate) return;
 
-    const parentElement = document.querySelector("#statszone");
+    const parentElement = document.querySelector("#statszone_tracker");
     if (!parentElement) return;
 
     if (!hudStatus) {

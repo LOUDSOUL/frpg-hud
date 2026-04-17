@@ -98,7 +98,7 @@ const setupTouchHandlers = () => {
     document.body.addEventListener("touchmove", cancelTouch);
 };
 
-const addAnimationStyle = () => {
+const addScriptStyles = () => {
     GM_addStyle(`
         .frpg-hud-item .fill-animation.active {
             animation: fillUp 500ms forwards;
@@ -107,6 +107,10 @@ const addAnimationStyle = () => {
         @keyframes fillUp {
             from { width: 0; }
             to { width: 95%; }
+        }
+
+        #statszone_tracker {
+            position: unset !important;
         }
     `);
 };
@@ -120,7 +124,7 @@ const setupVisibilityChangeListener = () => {
 };
 
 export const setupEventListeners = () => {
-    addAnimationStyle();
+    addScriptStyles();
     preventDefaultContextMenu();
     setupDOMContentLoadedHandlers();
     setupVisibilityChangeListener();
