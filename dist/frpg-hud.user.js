@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-04-15-86fe877
+// @version      2026-04-17-d415571
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -606,7 +606,7 @@
   };
   const _updateHudDisplay = (forceUpdate = false) => {
     if (document.hidden && !forceUpdate) return;
-    const parentElement = document.querySelector("#statszone");
+    const parentElement = document.querySelector("#statszone_tracker");
     if (!parentElement) return;
     if (!hudStatus) {
       if (forceUpdate) parentElement.innerHTML = statsHtml;
@@ -1851,22 +1851,40 @@
     urlMatch: [/^index\.php/],
     passive: true
   };
-  const explorationHud = (response) => {
-    const parsedHud = parseHtml(response);
-    const statsDiv = parsedHud.firstElementChild;
+  const addToggleButton = (element) => {
+    const statsDiv = element.firstElementChild;
     const toggleHtml = `<span><a id="frpg-hud-toggle" style="padding: 3px 5px 2px 5px; border: 1px solid; border-radius: 5px;" onclick="toggleHudStatus()" href="#">HUD</span>`;
-    const hrElement = statsDiv.querySelector("hr");
+    const hrElement = statsDiv == null ? void 0 : statsDiv.querySelector("hr");
     if (hrElement) {
       hrElement.insertAdjacentHTML("beforeBegin", toggleHtml);
     } else {
-      statsDiv.insertAdjacentHTML("beforeEnd", toggleHtml);
+      const spans = element.querySelectorAll("span");
+      if (spans.length > 0) {
+        spans[spans.length - 1].insertAdjacentHTML("afterEnd", toggleHtml);
+        return element;
+      } else {
+        statsDiv.insertAdjacentHTML("beforeEnd", toggleHtml);
+      }
     }
-    setStatsData(Array.from(parsedHud.firstElementChild.children).filter((element) => element.tagName === "SPAN").slice(0, 4).map((i) => i.innerHTML));
-    setStatsHtml(parsedHud.innerHTML);
-    if (hudStatus) {
-      return getHudHtml();
+    return element;
+  };
+  const explorationHud = (response) => {
+    const parsedResponse = JSON.parse(response);
+    const mainHtml = parsedResponse.html_main;
+    const trackerHtml = parsedResponse.html_tracker;
+    const mainElement = parseHtml(mainHtml);
+    const trackerElement = trackerHtml ? parseHtml(trackerHtml) : trackerHtml;
+    addToggleButton(mainElement);
+    if (trackerElement) {
+      addToggleButton(trackerElement);
     }
-    return parsedHud.innerHTML;
+    setStatsData(Array.from(mainElement.querySelectorAll("span")).map((i) => i.innerHTML));
+    setStatsHtml(trackerElement ? trackerElement.innerHTML : "");
+    return JSON.stringify({
+      ...parsedResponse,
+      html_main: mainElement.innerHTML,
+      html_tracker: hudStatus ? getHudHtml() : trackerElement ? trackerElement.innerHTML : trackerElement
+    });
   };
   const hudListener = {
     name: "Exploration HUD",
@@ -2828,7 +2846,7 @@
     document.body.addEventListener("touchend", cancelTouch);
     document.body.addEventListener("touchmove", cancelTouch);
   };
-  const addAnimationStyle = () => {
+  const addScriptStyles = () => {
     GM_addStyle(`
         .frpg-hud-item .fill-animation.active {
             animation: fillUp 500ms forwards;
@@ -2837,6 +2855,10 @@
         @keyframes fillUp {
             from { width: 0; }
             to { width: 95%; }
+        }
+
+        #statszone_tracker {
+            position: unset !important;
         }
     `);
   };
@@ -2848,7 +2870,7 @@
     });
   };
   const setupEventListeners = () => {
-    addAnimationStyle();
+    addScriptStyles();
     preventDefaultContextMenu();
     setupDOMContentLoadedHandlers();
     setupVisibilityChangeListener();
