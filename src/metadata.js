@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-03-03
+// @version      2026-04-17
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php

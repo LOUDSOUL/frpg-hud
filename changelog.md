@@ -1,3 +1,19 @@
+# Version 2026-03-05
+- Fixed HUD to work with the latest tracker UI update
+- Fixed a bug causing "send" quickAction not showing for items sendable to specific townsfolk
+- Fixed item count calculation on regular explores
+- Added notifications for items in craftworks reaching inventory cap
+    - Only notifies for items not in other enabled craftworks items' recipes
+    - Enabled by default
+    - Can be toggled on/off in settings
+- Added ability to toggle between the Exploring and Fishing shortcut
+    - Middle/right click or tap and hold the "Explore" button to toggle between the two
+- Added a system for saving discovered loved/liked items
+- Added tracking for grape juice vat uses and single harvests
+- Added tracking for mailbox items
+- Updated townsfolk gift list to include the townsfolk mailbox only items
+
+
 # Version 2026-03-03
 - Added a new "Edit Mode" which allows quickly modifying quick action for an item
     - Accessible by middle clicking "HUD" -> "Enable Edit Mode"
