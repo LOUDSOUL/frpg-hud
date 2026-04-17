@@ -1,5 +1,6 @@
 import { updateInventory } from "../utils/inventory";
 import { parseHtml } from "../utils/misc";
+import { parseNumberWithCommas } from "../utils/numbers";
 import { addTownsfolkGifts, townsfolk } from "../utils/townsfolk";
 
 
@@ -17,7 +18,7 @@ const parseMailbox = (response, url) => {
         const itemId = new URLSearchParams(link.href.split('?')[1]).get("id");
         const count = item.querySelector("input.qty").dataset.numLeft;
 
-        updatedInventory[itemId] = count;
+        updatedInventory[itemId] = parseNumberWithCommas(count);
     }
 
     updateInventory(updatedInventory, { isDetailed: false, isAbsolute: true });
