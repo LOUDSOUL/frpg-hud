@@ -147,19 +147,19 @@ export const hourlyProductionItems = ["Wood", "Board", "Coal", "Steel", "Steel W
 
 export const defaultTownsfolkGifts = {
     "Baba Gec": {
-        "loves": ["Cabbage Stew", "Peach Juice", "Wooden Button"],
+        "loves": ["Cabbage Stew", "Peach Juice", "Wooden Button", "Cabbage", "Frozen Cabbage"],
         "likes": ["Leek", "Onion", "Rope", "Snail"],
     },
     "Beatrix": {
-        "loves": ["Black Powder", "Explosive", "Fireworks", "Iced Tea"],
+        "loves": ["Black Powder", "Explosive", "Fireworks", "Iced Tea", "Bottle Rocket"],
         "likes": ["Bird Egg", "Carbon Sphere", "Coal", "Hammer", "Hops", "Oak"],
     },
     "Borgen": {
-        "loves": ["Cheese", "Gold Catfish", "Wooden Box"],
+        "loves": ["Cheese", "Gold Catfish", "Wooden Box", "Ancient Coin", "Skull Coin"],
         "likes": ["Glass Orb", "Gold Carrot", "Gold Cucumber", "Gold Peas", "Milk", "Slimestone"],
     },
     "Buddy": {
-        "loves": ["Pirate Bandana", "Pirate Flag", "Purple Flower", "Valentines Card"],
+        "loves": ["Pirate Bandana", "Pirate Flag", "Purple Flower", "Valentines Card", "Buddystone"],
         "likes": ["Bone", "Bucket", "Giant Centipede", "Gold Peppers", "Gummy Worms", "Mushroom", "Snail", "Spider"],
     },
     "Captain Thomas": {
@@ -171,7 +171,7 @@ export const defaultTownsfolkGifts = {
         "likes": ["Aquamarine", "Giant Centipede", "Grapes", "Ladder", "Slimestone", "Snail"],
     },
     "Charles": {
-        "loves": ["Apple", "Apple Cider", "Box of Chocolate 01", "Gold Carrot", "Peach", "Valentines Card"],
+        "loves": ["Apple", "Apple Cider", "Box of Chocolate 01", "Gold Carrot", "Peach", "Valentines Card", "Horseshoe", "4-leaf Clover", "Sugar Cube"],
         "likes": ["3-leaf Clover", "Carrot", "Grasshopper", "Twine"],
     },
     "Cid": {
@@ -179,7 +179,7 @@ export const defaultTownsfolkGifts = {
         "likes": ["Black Powder", "Blue Feathers", "Shimmer Stone", "Stone"],
     },
     "frank": {
-        "loves": ["Carrot", "Gold Carrot"],
+        "loves": ["Carrot", "Gold Carrot", "Cabbage"],
         "likes": ["Blue Dye", "Blue Feathers", "Bucket", "Caterpillar", "Feathers", "Grasshopper"],
     },
     "Gary Bearson V": {
@@ -195,11 +195,11 @@ export const defaultTownsfolkGifts = {
         "likes": ["Arrowhead", "Bird Egg", "Glass Orb", "Hops", "Mushroom Stew", "Orange Juice"],
     },
     "Holger": {
-        "loves": ["Gold Trout", "Mug of Beer", "Potato", "Wooden Table"],
+        "loves": ["Gold Trout", "Mug of Beer", "Potato", "Wooden Table", "Marlin"],
         "likes": ["Apple Cider", "Arrowhead", "Bluegill", "Carp", "Cheese", "Horn", "Largemouth Bass", "Mushroom Stew", "Peach", "Peas", "Trout"],
     },
     "Jill": {
-        "loves": ["Leather", "MIAB", "Mushroom Paste", "Peach", "Yellow Perch"],
+        "loves": ["Leather", "MIAB", "Mushroom Paste", "Peach", "Yellow Perch", "Corn", "Corn Husk Doll"],
         "likes": ["Cheese", "Grapes", "Milk", "Old Boot", "Scrap Metal", "Tomato"],
     },
     "Lorn": {
@@ -211,7 +211,7 @@ export const defaultTownsfolkGifts = {
         "likes": ["Cucumber", "Eggplant", "Eggs", "Iced Tea", "Milk", "Peach", "Radish"],
     },
     "Mummy": {
-        "loves": ["Bone", "Spider", "Valentines Card"],
+        "loves": ["Bone", "Spider", "Valentines Card", "Pumpkin Spiced Milk", "Toilet Paper"],
         "likes": ["Fish Bones", "Hammer", "Treat Bag 02", "Yarn"],
     },
     "Ric Ryph": {
@@ -223,15 +223,15 @@ export const defaultTownsfolkGifts = {
         "likes": ["Glass Orb", "Hammer", "Scrap Wire"],
     },
     "Rosalie": {
-        "loves": ["Blue Dye", "Box of Chocolate 01", "Gold Carrot", "Green Dye", "Purple Dye", "Red Dye", "Valentines Card"],
+        "loves": ["Blue Dye", "Box of Chocolate 01", "Gold Carrot", "Green Dye", "Purple Dye", "Red Dye", "Valentines Card", "Garnet Ring", "Ruby Ring"],
         "likes": ["Apple", "Apple Cider", "Aquamarine", "Carrot", "Caterpillar", "Fireworks", "Iced Tea", "Purple Flower"],
     },
     "Star Meerif": {
-        "loves": ["Blue Feathers", "Gold Feather"],
+        "loves": ["Blue Feathers", "Gold Feather", "Linked Lantern"],
         "likes": ["Eggs", "Feathers"],
     },
     "Thomas": {
-        "loves": ["Fishing Net", "Flier", "Gold Catfish", "Gold Trout", "Goldgill"],
+        "loves": ["Fishing Net", "Flier", "Gold Catfish", "Gold Trout", "Goldgill", "Chum"],
         "likes": ["Carp", "Drum", "Gummy Worms", "Iced Tea", "Largemouth Bass", "Mealworms", "Minnows"],
     },
     "Vincent": {
