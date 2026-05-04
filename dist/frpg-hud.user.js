@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-05-04-cc0cb8f
+// @version      2026-05-04-fb8e177
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -2347,6 +2347,7 @@
     if (hickoryActive) {
       updateBatch["Wood"] = Math.floor(production["Wood"] / 5);
       updateBatch["Board"] = Math.floor(production["Board"] / 5);
+      updateBatch["Oak"] = Math.floor(production["Oak"] / 5);
     }
     updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
   };
