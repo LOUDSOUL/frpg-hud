@@ -20,12 +20,12 @@ import wormHabitatListener from "./listeners/hab";
 import questListener from "./listeners/quest";
 import questsListener from "./listeners/quests";
 import mailboxListener from "./listeners/mailbox";
+import farmInfoListener from "./listeners/farminfo";
 
 import { interceptFetch, interceptXHR } from "./utils/interceptors";
 import { setupEventListeners } from "./utils/listeners";
 import { setupStorageListeners } from "./utils/storage";
 import { scheduleProduction } from "./utils/production";
-
 
 const listeners = [
     workerListener,
@@ -50,6 +50,7 @@ const listeners = [
     questListener,
     questsListener,
     mailboxListener,
+    farmInfoListener,
 ];
 
 const responseHandler = (response, url, type) => {
@@ -86,7 +87,7 @@ interceptFetch(responseHandler);
 /* eslint-disable no-undef */
 // Only export during testing
 // Prevents the bundler from injecting `exports` into the build
-if (__TEST_MODE && typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+if (__TEST_MODE && typeof module !== "undefined" && typeof module.exports !== "undefined") {
     module.exports = { listeners, responseHandler };
 }
 /* eslint-enable no-undef */
