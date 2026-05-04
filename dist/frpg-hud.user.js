@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-05-04-bdf4e1f
+// @version      2026-05-04-cc0cb8f
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -1552,7 +1552,7 @@
     GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, updatedSupplyPacks);
   };
   const handleMealUse = (response, parameters) => {
-    if (!response === "success") return;
+    if (response !== "success") return;
     const itemId = parameters.get("id");
     const itemDetails = inventoryCache[itemId];
     if (!itemDetails) return;
