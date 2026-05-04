@@ -37,13 +37,25 @@ export const handleHudTimerUpdate = (value) => {
 
     clearInterval(hudTimerInterval);
     if (Object.keys(value).length > 0 && settings.mealTimersEnabled) {
-        hudTimerInterval = setInterval(updateHudDisplay, 1000);
+        // Cannot purge old timers since they are used by
+        // `tenMinuteProduction` to estimate sawmill production
+
+        let activeMeals = false;
+        let now = Date.now();
+        for (const timestamp of Object.values(hudTimers)) {
+            activeMeals = activeMeals || timestamp + 30 * 1000 > now;
+        }
+
+        if (activeMeals) {
+            hudTimerInterval = setInterval(updateHudDisplay, 1000);
+        }
     }
 
     return true;
 };
 
 setTimeout(() => handleHudTimerUpdate(hudTimers));
+setInterval(() => handleHudTimerUpdate(hudTimers), 30 * 1000);
 
 let hudUrl = GM_getValue(STORAGE_KEYS.HUD_URL, null);
 export const setHudUrl = (url) => hudUrl = url;
