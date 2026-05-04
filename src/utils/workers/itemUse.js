@@ -7,7 +7,7 @@ import { supplyPacks } from "../supplyPack";
 
 
 const handleMealUse = (response, parameters) => {
-    if (!response === "success") return;
+    if (response !== "success") return;
 
     const itemId = parameters.get("id");
     const itemDetails = inventoryCache[itemId];
