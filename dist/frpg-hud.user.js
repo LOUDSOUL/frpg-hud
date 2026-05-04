@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-05-04-afb584d
+// @version      2026-05-04-bdf4e1f
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -413,11 +413,19 @@
     hudTimers = value;
     clearInterval(hudTimerInterval);
     if (Object.keys(value).length > 0 && settings.mealTimersEnabled) {
-      hudTimerInterval = setInterval(updateHudDisplay, 1e3);
+      let activeMeals = false;
+      let now = Date.now();
+      for (const timestamp of Object.values(hudTimers)) {
+        activeMeals = activeMeals || timestamp + 30 * 1e3 > now;
+      }
+      if (activeMeals) {
+        hudTimerInterval = setInterval(updateHudDisplay, 1e3);
+      }
     }
     return true;
   };
   setTimeout(() => handleHudTimerUpdate(hudTimers));
+  setInterval(() => handleHudTimerUpdate(hudTimers), 30 * 1e3);
   let hudUrl = GM_getValue(STORAGE_KEYS.HUD_URL, null);
   const setHudUrl = (url) => hudUrl = url;
   const toggleHudStatus = () => {
