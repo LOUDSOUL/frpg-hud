@@ -33,6 +33,7 @@ const tenMinuteProduction = (productionTime) => {
     if (hickoryActive) {
         updateBatch["Wood"] = Math.floor(production["Wood"] / 5);
         updateBatch["Board"] = Math.floor(production["Board"] / 5);
+        updateBatch["Oak"] = Math.floor(production["Oak"] / 5);
     }
 
     updateInventory(updateBatch, { isAbsolute: false, resolveNames: true, processCraftworks: true });
