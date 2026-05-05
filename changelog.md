@@ -1,4 +1,22 @@
-# Version 2026-03-05
+# Version 2026-05-05
+- Added crop harvest stats grouped by date in `farminfo.php` page
+    - To check it out click on the `(i)` button at the top of `My Farm` page
+    - They're generated from the logs the game sends (no storage)
+- Improved the locksmith page HUD view
+    - Now it shows your expected inventory after opening the selected amount of supply packs
+    - Applies only to supply packs with fixed drops
+    - Uses the old behaviour for packs with randomized drops like grab bags
+    - Gold is now properly shown in supply pack contents
+    - Void Bags are now correctly exluded
+- Added logic to sync Ancient Coin count from the bottom panel
+- Fixed inventory going out of sync when quick sending an active craftworks item
+- Fixed Oak production calculation when Hickory buff is active
+- Fixed meal timer getting added when meal use fails
+- Prevented useless HUD updates when no meal timer is active
+- Removed the (broken) ancient coin usage number on the wheel page
+
+
+# Version 2026-04-17
 - Fixed HUD to work with the latest tracker UI update
 - Fixed a bug causing "send" quickAction not showing for items sendable to specific townsfolk
 - Fixed item count calculation on regular explores
