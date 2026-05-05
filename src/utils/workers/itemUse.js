@@ -53,7 +53,7 @@ const handleLocksmithOpen = (response, parameters) => {
     }
 
     updateInventory(updatedInventory, { isAbsolute: false, resolveNames: true, processCraftworks: true });
-    if (updateSupplyPacks && supplyPackName && supplyPackName !== "Void Bag") {
+    if (updateSupplyPacks && supplyPackName && !supplyPackName.startsWith("Void Bag")) {
         GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, { ...supplyPacks, [supplyPackName]: supplyPackData });
     }
 };

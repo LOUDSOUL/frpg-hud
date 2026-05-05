@@ -27,6 +27,7 @@ export const HUD_DISPLAY_MODES = {
     INVENTORY: "INVENTORY",
     MEAL: "MEAL",
     TIMER: "TIMER",
+    SUPPLY_PACK: "SUPPLY_PACK",
 };
 
 export const seedCrop = {
@@ -256,4 +257,6 @@ for (const [townsfolk, gifts] of Object.entries(defaultTownsfolkGifts)) {
         if (!defaultLikedItems[item]) defaultLikedItems[item] = { likes: [], loves: [] };
         defaultLikedItems[item].likes.push(townsfolk);
     });
-};
+}
+
+export const goldImageUrl = "https://farmrpg.com/img/items/gold_17.png?1";

@@ -1,19 +1,17 @@
-import { setHudItemsByName } from "../utils/hud";
+import { setSupplyItemsHud } from "../utils/hud";
 import { parseHtml } from "../utils/misc";
-import { supplyPacks } from "../utils/supplyPack";
-
+import { parseNumberWithCommas } from "../utils/numbers";
 
 const trackSupplyPack = (target) => {
     const itemContainer = target.closest(".item-content");
-    const supplyPackName = itemContainer.querySelector(".item-title > strong").childNodes[0].textContent.trim();
+    const supplyPackName = itemContainer
+        .querySelector(".item-title > strong")
+        .childNodes[0].textContent.trim();
+    const quantity = parseNumberWithCommas(itemContainer.querySelector("input.qty").value);
 
-    const supplyPackDetails = supplyPacks[supplyPackName];
-    if (!supplyPackDetails) return;
-
-    setHudItemsByName(Object.keys(supplyPackDetails));
+    setSupplyItemsHud(supplyPackName, quantity);
 };
 unsafeWindow.trackSupplyPack = trackSupplyPack;
-
 
 const parseLocksmith = (response) => {
     const parsedResponse = parseHtml(response);
@@ -21,8 +19,12 @@ const parseLocksmith = (response) => {
     for (const item of itemList) {
         item.setAttribute("onclick", "trackSupplyPack(event.target)");
     }
+    const qtyInputs = parsedResponse.querySelectorAll("input.qty");
+    for (const input of qtyInputs) {
+        input.setAttribute("oninput", "trackSupplyPack(event.target)");
+    }
     return parsedResponse.innerHTML;
-}
+};
 
 const locksmithListener = {
     name: "Locksmith",

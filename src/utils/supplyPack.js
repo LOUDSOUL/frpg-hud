@@ -21,11 +21,13 @@ export const parseSupplyPack = (titleRows, itemName) => {
         const itemId = item.href.split("id=")[1];
         const image = item.querySelector("img.itemimg").src;
         const name = item.querySelector(".item-title > strong").innerText.trim();
-        const count = Number(item.querySelector(".item-after").innerText.trim().slice(0, -1));
-        if (name === "Gold") continue;
+        const count = Number(item.querySelector(".item-after").innerText.replace("x", "").trim());
 
         supplyPackItems[name] = count;
-        updatedInventory[itemId] = { id: itemId, name, image };
+
+        if (name !== "Gold") {
+            updatedInventory[itemId] = { id: itemId, name, image };
+        }
     }
 
     updateInventory(updatedInventory, { isDetailed: true });

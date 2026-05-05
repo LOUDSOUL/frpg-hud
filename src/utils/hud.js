@@ -1,8 +1,9 @@
-import { darkModeActive, HUD_DISPLAY_MODES, STORAGE_KEYS } from "../constants";
+import { darkModeActive, goldImageUrl, HUD_DISPLAY_MODES, STORAGE_KEYS } from "../constants";
 import { inventoryCache, inventoryLimit, itemNameIdMap } from "./inventory";
 import { debounceHudUpdate, getDefaultTextColor, refreshInventory } from "./misc";
 import { getFormattedNumber } from "./numbers";
 import { editMode, setEditMode, settings } from "./settings";
+import { supplyPacks } from "./supplyPack";
 
 
 let statsData = [];
@@ -107,6 +108,37 @@ const restoreHudItems = () => {
     GM_setValue(STORAGE_KEYS.HUD_STASH, null);
 };
 
+export const stashCurrentItems = () => {
+    if (hudStash !== null) return;
+
+    const currentItemNames = hudItems.map((item) => item.name);
+    GM_setValue(STORAGE_KEYS.HUD_STASH, currentItemNames);
+};
+
+export const setSupplyItemsHud = (supplyPack, amountSelected) => {
+    if (supplyPack.startsWith("Void Bag")) return;
+
+    const packItems = supplyPacks[supplyPack];
+    if (!packItems || Object.keys(packItems).length === 0) return;
+
+    const updatedHudItems = Object.entries(packItems)
+        .map(([itemName, packQuantity]) => {
+            return {
+                ...inventoryCache[itemNameIdMap.get(itemName)],
+                amountPerSupplyPack: packQuantity,
+                supplyPacksSelected: amountSelected,
+                displayMode: HUD_DISPLAY_MODES.SUPPLY_PACK,
+                ...(itemName === "Gold" && { name: itemName, image: goldImageUrl, count: 0 }),
+            };
+        })
+        .filter((item) => item.id || item.name === "Gold");
+
+    if (updatedHudItems.length > 0) {
+        stashCurrentItems();
+        setHudDetails(updatedHudItems);
+    }
+};
+
 const formatRemainingTime = (timer, currentTime) => {
     const remainingSeconds = Math.max(0, Math.floor((timer - currentTime) / 1000));
 
@@ -124,20 +156,37 @@ const formatRemainingTime = (timer, currentTime) => {
     }
 }
 
+const getTextColour = (count, limit) => {
+    if (count >= limit) return "red";
+    else if (count >= limit * 0.8) {
+        const percent = count / limit;
+        const green = Math.round(255 - ((percent - 0.8) / 0.2) * (255 - 100));
+        return `rgb(255, ${green}, 50);`;
+    }
+    return getDefaultTextColor();
+}
+
 const hudHtmlCallbacks = {
     [HUD_DISPLAY_MODES.INVENTORY]: ({ image, count }) => {
-        let textColour = getDefaultTextColor();
-        if (count >= inventoryLimit) textColour = "red";
-        else if (count >= inventoryLimit * 0.8) {
-            const percent = count / inventoryLimit;
-            const green = Math.round(255 - ((percent - 0.8) / 0.2) * (255 - 100));
-            textColour = `rgb(255, ${green}, 50);`;
-        }
+        const textColour = getTextColour(count, inventoryLimit);
 
         return `
             <span style="color: ${textColour};">
                 <img src="${image}" class="itemimgmini" style="width:15px; vertical-align:middle; padding-right:1px">
                 ${getFormattedNumber(count)} / ${getFormattedNumber(inventoryLimit)} &nbsp;
+            </span>`;
+    },
+    [HUD_DISPLAY_MODES.SUPPLY_PACK]: (item) => {
+        const supplyPackTotal = (item.amountPerSupplyPack ?? 0) * (item.supplyPacksSelected ?? 0);
+        const totalOnOpen = item.count + supplyPackTotal;
+        const textColour = getTextColour(totalOnOpen, inventoryLimit);
+        const formattedLimit = getFormattedNumber(inventoryLimit);
+        const limitText = item.name === "Gold" ? " Gold" : `/ ${formattedLimit}`;
+
+        return `
+            <span style="color: ${textColour};">
+                <img src="${item.image}" class="itemimgmini" style="width:15px; vertical-align:middle; padding-right:1px">
+                ${getFormattedNumber(totalOnOpen)} ${limitText} &nbsp;
             </span>`;
     },
     [HUD_DISPLAY_MODES.MEAL]: ({ name, image, count }) => {
