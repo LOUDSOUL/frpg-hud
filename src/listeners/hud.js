@@ -1,5 +1,7 @@
 import { getHudHtml, hudStatus, setStatsData, setStatsHtml } from "../utils/hud";
+import { inventoryCache, itemNameIdMap, updateInventory } from "../utils/inventory";
 import { parseHtml } from "../utils/misc";
+import { parseNumberWithCommas } from "../utils/numbers";
 
 const addToggleButton = (element) => {
     const statsDiv = element.firstElementChild;
@@ -34,8 +36,16 @@ const explorationHud = (response) => {
     if (trackerElement) {
         addToggleButton(trackerElement);
     }
+    const statsElements = Array.from(mainElement.querySelectorAll("span"));
+    if (statsElements.length >= 3) {
+        const acElement = statsElements[2];
+        const acCount = parseNumberWithCommas(acElement.innerText);
 
-    setStatsData(Array.from(mainElement.querySelectorAll("span")).map(i => i.innerHTML));
+        if (acCount !== inventoryCache[itemNameIdMap.get("Ancient Coin")]?.count) {
+            updateInventory({ "Ancient Coin": acCount }, { isAbsolute: true, resolveNames: true });
+        }
+    }
+    setStatsData(statsElements.map((i) => i.innerHTML));
     setStatsHtml(trackerElement ? trackerElement.innerHTML : "");
 
     return JSON.stringify({
