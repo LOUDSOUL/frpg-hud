@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-05-05-dc04306
+// @version      2026-05-05-d5760f8
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -606,7 +606,6 @@
   };
   const exitEditMode = () => {
     setEditMode(false);
-    updateHudDisplay(true);
   };
   unsafeWindow.refreshInventory = refreshInventory;
   unsafeWindow.restoreHudItems = restoreHudItems;
@@ -1169,8 +1168,9 @@
   const setEditMode = (value) => {
     editMode = value;
     if (value) {
-      myApp.addNotification({ title: "Edit mode enabled", subtitle: "Perform quick action on any item to edit its config" });
+      notify("Edit mode enabled", "Perform quick action on any item to edit its config");
     }
+    updateHudDisplay(true);
   };
   const toggleSetting = (key) => {
     settings[key] = !(settings[key] ?? defaultSettings[key].default);
@@ -1578,13 +1578,18 @@
     }
   ];
   const handleItemSend = (response, parameters) => {
+    var _a2;
     if (!response.includes("wk__item_max")) return;
     const html = parseHtml(response);
     const maxItemCountElement = html.querySelector("#wk__item_max");
     if (!maxItemCountElement) return;
     const maxItemCount = parseNumberWithCommas(maxItemCountElement.textContent);
     const itemId = parameters.get("id");
-    updateInventory({ [itemId]: maxItemCount }, { isAbsolute: true });
+    const itemCount = parameters.get("qty");
+    updateInventory({ [itemId]: -itemCount }, { isAbsolute: false, processCraftworks: true });
+    if (((_a2 = inventoryCache[itemId]) == null ? void 0 : _a2.count) !== maxItemCount) {
+      updateInventory({ [itemId]: maxItemCount }, { isAbsolute: true });
+    }
   };
   const itemSendWorkers = [
     {
@@ -1918,6 +1923,7 @@
     return element;
   };
   const explorationHud = (response) => {
+    var _a2;
     const parsedResponse = JSON.parse(response);
     const mainHtml = parsedResponse.html_main;
     const trackerHtml = parsedResponse.html_tracker;
@@ -1927,7 +1933,15 @@
     if (trackerElement) {
       addToggleButton(trackerElement);
     }
-    setStatsData(Array.from(mainElement.querySelectorAll("span")).map((i) => i.innerHTML));
+    const statsElements = Array.from(mainElement.querySelectorAll("span"));
+    if (statsElements.length >= 3) {
+      const acElement = statsElements[2];
+      const acCount = parseNumberWithCommas(acElement.innerText);
+      if (acCount !== ((_a2 = inventoryCache[itemNameIdMap.get("Ancient Coin")]) == null ? void 0 : _a2.count)) {
+        updateInventory({ "Ancient Coin": acCount }, { isAbsolute: true, resolveNames: true });
+      }
+    }
+    setStatsData(statsElements.map((i) => i.innerHTML));
     setStatsHtml(trackerElement ? trackerElement.innerHTML : "");
     return JSON.stringify({
       ...parsedResponse,
@@ -2289,17 +2303,13 @@
   };
   const wheelSpin = (response) => {
     setHudItemsByName(wheelItems);
-    const parsedResponse = parseHtml(response);
-    const spinElement = parsedResponse.querySelector(`.card-content-inner > a[href="wheelhistory.php"]`).parentElement;
-    const spinCount = Number(spinElement.children[3].innerText);
-    const spinCost = 5 / 2 * spinCount * Math.max(0, spinCount - 1);
-    spinElement.innerHTML = spinElement.innerHTML.replace("</strong> time(s)", `</strong> time(s) for a total of <strong>${getFormattedNumber(spinCost)}</strong> coins`);
-    return parsedResponse.innerHTML;
+    return response;
   };
   const spinListener = {
     name: "Wheel Spin",
     callback: wheelSpin,
-    urlMatch: [/^spin\.php/]
+    urlMatch: [/^spin\.php/],
+    passive: true
   };
   const parseWorkshop = (response) => {
     const parsedWorkshop = parseHtml(response);
