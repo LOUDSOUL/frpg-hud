@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FRPG HUD
 // @namespace    AppleBottomJeans.FRPG.HUD
-// @version      2026-05-04-fb8e177
+// @version      2026-05-05-dc04306
 // @description  Live inventory monitoring, meal timers and more!
 // @author       AppleBottomJeans
 // @match        https://farmrpg.com/index.php
@@ -50,7 +50,8 @@
   const HUD_DISPLAY_MODES = {
     INVENTORY: "INVENTORY",
     MEAL: "MEAL",
-    TIMER: "TIMER"
+    TIMER: "TIMER",
+    SUPPLY_PACK: "SUPPLY_PACK"
   };
   const seedCrop = {
     "14": "13",
@@ -291,6 +292,7 @@
       defaultLikedItems[item].likes.push(townsfolk2);
     });
   }
+  const goldImageUrl = "https://farmrpg.com/img/items/gold_17.png?1";
   const parseHtml = (htmlString) => {
     const tempElement = document.createElement("div");
     tempElement.innerHTML = htmlString;
@@ -391,6 +393,31 @@
   const getFormattedNumber = (number) => {
     return Number.isNaN(number) ? "0" : numberFormatter.format(number);
   };
+  let supplyPacks = GM_getValue(STORAGE_KEYS.SUPPLY_PACKS, {});
+  const setSupplyPacks = (packs) => supplyPacks = packs;
+  const parseSupplyPack = (titleRows, itemName) => {
+    const supplyPackTitle = titleRows.find(
+      (row) => row.innerText.trim().toLowerCase() === "item contents"
+    );
+    if (!supplyPackTitle) return;
+    const supplyPackItems = {};
+    const updatedInventory = {};
+    const itemListElement = supplyPackTitle.nextElementSibling.nextElementSibling;
+    const itemList = itemListElement.querySelectorAll("a.item-link");
+    for (const item of itemList) {
+      const itemId = item.href.split("id=")[1];
+      const image = item.querySelector("img.itemimg").src;
+      const name = item.querySelector(".item-title > strong").innerText.trim();
+      const count = Number(item.querySelector(".item-after").innerText.replace("x", "").trim());
+      supplyPackItems[name] = count;
+      if (name !== "Gold") {
+        updatedInventory[itemId] = { id: itemId, name, image };
+      }
+    }
+    updateInventory(updatedInventory, { isDetailed: true });
+    const updatedSupplyPacks = { ...supplyPacks, [itemName]: supplyPackItems };
+    GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, updatedSupplyPacks);
+  };
   let statsData = [];
   const setStatsData = (data) => statsData = data;
   let statsHtml = "";
@@ -464,6 +491,29 @@
     setHudItemsByName(hudStash);
     GM_setValue(STORAGE_KEYS.HUD_STASH, null);
   };
+  const stashCurrentItems = () => {
+    if (hudStash !== null) return;
+    const currentItemNames = hudItems.map((item) => item.name);
+    GM_setValue(STORAGE_KEYS.HUD_STASH, currentItemNames);
+  };
+  const setSupplyItemsHud = (supplyPack, amountSelected) => {
+    if (supplyPack.startsWith("Void Bag")) return;
+    const packItems = supplyPacks[supplyPack];
+    if (!packItems || Object.keys(packItems).length === 0) return;
+    const updatedHudItems = Object.entries(packItems).map(([itemName, packQuantity]) => {
+      return {
+        ...inventoryCache[itemNameIdMap.get(itemName)],
+        amountPerSupplyPack: packQuantity,
+        supplyPacksSelected: amountSelected,
+        displayMode: HUD_DISPLAY_MODES.SUPPLY_PACK,
+        ...itemName === "Gold" && { name: itemName, image: goldImageUrl, count: 0 }
+      };
+    }).filter((item) => item.id || item.name === "Gold");
+    if (updatedHudItems.length > 0) {
+      stashCurrentItems();
+      setHudDetails(updatedHudItems);
+    }
+  };
   const formatRemainingTime = (timer, currentTime) => {
     const remainingSeconds = Math.max(0, Math.floor((timer - currentTime) / 1e3));
     if (remainingSeconds < 60) {
@@ -479,19 +529,34 @@
       return `${hours}h ${minutes.toString().padStart(2, "0")}m ${seconds.toString().padStart(2, "0")}s`;
     }
   };
+  const getTextColour = (count, limit) => {
+    if (count >= limit) return "red";
+    else if (count >= limit * 0.8) {
+      const percent = count / limit;
+      const green = Math.round(255 - (percent - 0.8) / 0.2 * (255 - 100));
+      return `rgb(255, ${green}, 50);`;
+    }
+    return getDefaultTextColor();
+  };
   const hudHtmlCallbacks = {
     [HUD_DISPLAY_MODES.INVENTORY]: ({ image, count }) => {
-      let textColour = getDefaultTextColor();
-      if (count >= inventoryLimit) textColour = "red";
-      else if (count >= inventoryLimit * 0.8) {
-        const percent = count / inventoryLimit;
-        const green = Math.round(255 - (percent - 0.8) / 0.2 * (255 - 100));
-        textColour = `rgb(255, ${green}, 50);`;
-      }
+      const textColour = getTextColour(count, inventoryLimit);
       return `
             <span style="color: ${textColour};">
                 <img src="${image}" class="itemimgmini" style="width:15px; vertical-align:middle; padding-right:1px">
                 ${getFormattedNumber(count)} / ${getFormattedNumber(inventoryLimit)} &nbsp;
+            </span>`;
+    },
+    [HUD_DISPLAY_MODES.SUPPLY_PACK]: (item) => {
+      const supplyPackTotal = (item.amountPerSupplyPack ?? 0) * (item.supplyPacksSelected ?? 0);
+      const totalOnOpen = item.count + supplyPackTotal;
+      const textColour = getTextColour(totalOnOpen, inventoryLimit);
+      const formattedLimit = getFormattedNumber(inventoryLimit);
+      const limitText = item.name === "Gold" ? " Gold" : `/ ${formattedLimit}`;
+      return `
+            <span style="color: ${textColour};">
+                <img src="${item.image}" class="itemimgmini" style="width:15px; vertical-align:middle; padding-right:1px">
+                ${getFormattedNumber(totalOnOpen)} ${limitText} &nbsp;
             </span>`;
     },
     [HUD_DISPLAY_MODES.MEAL]: ({ name, image, count }) => {
@@ -1527,30 +1592,6 @@
       listener: handleItemSend
     }
   ];
-  let supplyPacks = GM_getValue(STORAGE_KEYS.SUPPLY_PACKS, {});
-  const setSupplyPacks = (packs) => supplyPacks = packs;
-  const parseSupplyPack = (titleRows, itemName) => {
-    const supplyPackTitle = titleRows.find(
-      (row) => row.innerText.trim().toLowerCase() === "item contents"
-    );
-    if (!supplyPackTitle) return;
-    const supplyPackItems = {};
-    const updatedInventory = {};
-    const itemListElement = supplyPackTitle.nextElementSibling.nextElementSibling;
-    const itemList = itemListElement.querySelectorAll("a.item-link");
-    for (const item of itemList) {
-      const itemId = item.href.split("id=")[1];
-      const image = item.querySelector("img.itemimg").src;
-      const name = item.querySelector(".item-title > strong").innerText.trim();
-      const count = Number(item.querySelector(".item-after").innerText.trim().slice(0, -1));
-      if (name === "Gold") continue;
-      supplyPackItems[name] = count;
-      updatedInventory[itemId] = { id: itemId, name, image };
-    }
-    updateInventory(updatedInventory, { isDetailed: true });
-    const updatedSupplyPacks = { ...supplyPacks, [itemName]: supplyPackItems };
-    GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, updatedSupplyPacks);
-  };
   const handleMealUse = (response, parameters) => {
     if (response !== "success") return;
     const itemId = parameters.get("id");
@@ -1587,7 +1628,7 @@
       updatedInventory[itemName] = itemCount;
     }
     updateInventory(updatedInventory, { isAbsolute: false, resolveNames: true, processCraftworks: true });
-    if (updateSupplyPacks && supplyPackName && supplyPackName !== "Void Bag") {
+    if (updateSupplyPacks && supplyPackName && !supplyPackName.startsWith("Void Bag")) {
       GM_setValue(STORAGE_KEYS.SUPPLY_PACKS, { ...supplyPacks, [supplyPackName]: supplyPackData });
     }
   };
@@ -2198,9 +2239,8 @@
   const trackSupplyPack = (target) => {
     const itemContainer = target.closest(".item-content");
     const supplyPackName = itemContainer.querySelector(".item-title > strong").childNodes[0].textContent.trim();
-    const supplyPackDetails = supplyPacks[supplyPackName];
-    if (!supplyPackDetails) return;
-    setHudItemsByName(Object.keys(supplyPackDetails));
+    const quantity = parseNumberWithCommas(itemContainer.querySelector("input.qty").value);
+    setSupplyItemsHud(supplyPackName, quantity);
   };
   unsafeWindow.trackSupplyPack = trackSupplyPack;
   const parseLocksmith = (response) => {
@@ -2208,6 +2248,10 @@
     const itemList = parsedResponse.querySelectorAll(".close-panel");
     for (const item of itemList) {
       item.setAttribute("onclick", "trackSupplyPack(event.target)");
+    }
+    const qtyInputs = parsedResponse.querySelectorAll("input.qty");
+    for (const input of qtyInputs) {
+      input.setAttribute("oninput", "trackSupplyPack(event.target)");
     }
     return parsedResponse.innerHTML;
   };
