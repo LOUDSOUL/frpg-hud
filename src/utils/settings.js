@@ -1,5 +1,6 @@
 import { defaultSettings, STORAGE_KEYS } from "../constants";
-import { handleHudTimerUpdate, hudTimers } from "./hud";
+import { handleHudTimerUpdate, hudTimers, updateHudDisplay } from "./hud";
+import { notify } from "./misc";
 import { quickActions } from "./quickActions";
 
 
@@ -26,12 +27,14 @@ export const setEditMode = (value) => {
     editMode = value;
 
     if (value) {
-        myApp.addNotification({ title: "Edit mode enabled", subtitle: "Perform quick action on any item to edit its config" });
+        notify("Edit mode enabled", "Perform quick action on any item to edit its config");
     }
+
+    updateHudDisplay(true);
 }
 
 /**
- * @param {keyof typeof defaultSettings} key 
+ * @param {keyof typeof defaultSettings} key
  */
 const toggleSetting = (key) => {
     settings[key] = !(settings[key] ?? defaultSettings[key].default);

@@ -247,7 +247,6 @@ const getHudTable = (items, perRowItems) => {
 
 const exitEditMode = () => {
     setEditMode(false);
-    updateHudDisplay(true);
 };
 
 unsafeWindow.refreshInventory = refreshInventory;
