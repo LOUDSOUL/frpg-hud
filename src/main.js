@@ -10,7 +10,7 @@ import locksmithListener from "./listeners/locksmith";
 import townsfolkListener from "./listeners/npclevels";
 import spinListener from "./listeners/spin";
 import workshopListener from "./listeners/workshop";
-import xfarmListener from "./listeners/xfarm";
+import xfarmListeners from "./listeners/xfarm";
 import sawmillListener from "./listeners/sawmill";
 import quarryListener from "./listeners/quarry";
 import hayfieldListener from "./listeners/hayfield";
@@ -30,7 +30,7 @@ import { scheduleProduction } from "./utils/production";
 const listeners = [
     workerListener,
     hudListener,
-    xfarmListener,
+    ...xfarmListeners,
     areaListener,
     homeListener,
     itemListener,
